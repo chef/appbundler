@@ -4,25 +4,52 @@ require 'pp'
 module Appbundler
 
   class App
-    attr_accessor :gemfile_lock
-    attr_accessor :name
+    attr_accessor :app_root
 
     def demo
-      @gemfile_lock = "/Users/ddeleo/oc/chef/Gemfile.lock"
-      @name = "chef"
-      puts runtime_activate
+      @app_root = "/Users/ddeleo/oc/chef"
+
+      knife = app_executables.grep(/knife/).first
+      puts binstub(knife)
+    end
+
+    def name
+      File.basename(app_root)
+    end
+
+    def gemfile_lock
+      File.join(app_root, "Gemfile.lock")
+    end
+
+    def shebang
+      "#!#{Gem.ruby}\n"
+    end
+
+    def env_sanitizer
+      %Q{ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil}
     end
 
     def runtime_activate
-      statements = runtime_dep_specs.map {|s| %Q|gem "#{s.name}", "= #{s.version}"|}
-      activate_code = statements.join("\n")
-      activate_code << "\n"
-      activate_code << %Q|$:.unshift "#{app_lib_dir}"\n|
-      activate_code
+      @runtime_activate ||= begin
+        statements = runtime_dep_specs.map {|s| %Q|gem "#{s.name}", "= #{s.version}"|}
+        activate_code = ""
+        activate_code << env_sanitizer << "\n"
+        activate_code << statements.join("\n") << "\n"
+        activate_code << %Q|$:.unshift "#{app_lib_dir}"\n|
+        activate_code
+      end
+    end
+
+    def binstub(bin_file)
+      shebang + runtime_activate + "Kernel.load '#{bin_file}'\n"
+    end
+
+    def app_executables
+      bin_dir_glob = File.join(app_root, "bin", "*")
+      Dir[bin_dir_glob]
     end
 
     def app_lib_dir
-      app_root = File.expand_path("..", gemfile_lock)
       File.join(app_root, "lib")
     end
 
