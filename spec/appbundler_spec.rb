@@ -1,4 +1,6 @@
 require 'spec_helper'
+require 'fileutils'
+require 'mixlib/shellout'
 require 'appbundler'
 
 describe Appbundler do
@@ -13,6 +15,16 @@ describe Appbundler do
     all_specs << spec
     spec
   end
+
+  def shellout!(cmd)
+    s = Mixlib::ShellOut.new(cmd, :env => {"RUBYOPT" => nil})
+    s.run_command
+    s.error!
+    s
+  end
+
+  let(:target_bindir) { File.expand_path("../test-tmp/bin", __FILE__) }
+
 
   context "given an app with multiple levels of dependencies" do
 
@@ -43,9 +55,7 @@ describe Appbundler do
     let(:app_root) { "/opt/app/embedded/apps/app" }
 
     let(:app) do
-      a = Appbundler::App.new
-      a.app_root = app_root
-      a
+      Appbundler::App.new(app_root, target_bindir)
     end
 
     before do
@@ -68,15 +78,15 @@ describe Appbundler do
     end
 
     it "generates gem activation code for the app" do
-      # this is code with a bunch of gem "foo", "= X.Y.Z" statements. The
-      # code spike doesn't properly account for loading the actual app from a
-      # local checkout. Need to see how bundler activates the "app gem" and
-      # borrow the logic.
+      # this is code with a bunch of gem "foo", "= X.Y.Z" statements. The top
+      # level application is _not_ included in this, it's added to the load
+      # path instead.
       expect(app.runtime_activate).to include(%q{gem "first_level_dep_a", "= 1.1.0"})
       expect(app.runtime_activate).to include(%q{gem "second_level_dep_a_a", "= 2.1.0"})
       expect(app.runtime_activate).to include(%q{gem "second_level_dep_shared", "= 2.3.0"})
       expect(app.runtime_activate).to include(%q{gem "first_level_dep_b", "= 1.2.0"})
       expect(app.runtime_activate).to include(%q{gem "second_level_dep_b_a", "= 2.2.0"})
+      expect(app.runtime_activate).to_not include(%q{gem "app"})
     end
 
     it "adds the app code to the load path" do
@@ -87,6 +97,108 @@ describe Appbundler do
       expected = %Q{ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil}
       expect(app.env_sanitizer).to eq(expected)
       expect(app.runtime_activate).to include(expected)
+    end
+
+  end
+
+  context "when created with the example application" do
+
+    let(:app_root) { File.expand_path("../fixtures/example-app", __FILE__) }
+
+    let(:app) do
+      Appbundler::App.new(app_root, target_bindir)
+    end
+
+    before do
+      FileUtils.rm_rf(target_bindir) if File.exist?(target_bindir)
+      FileUtils.mkdir_p(target_bindir)
+    end
+
+    after(:all) do
+      FileUtils.rm_rf(target_bindir) if File.exist?(target_bindir)
+    end
+
+    it "initializes ok" do
+      app
+    end
+
+    it "names the app using the directory basename" do
+      app.name.should == "example-app"
+    end
+
+    it "lists the app's dependencies" do
+      # only runtime deps
+      expect(app.app_dependency_names).to eq(["chef"])
+    end
+
+    it "generates runtime activation code for the app" do
+      expected_gem_activates=<<-E
+ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil
+gem "chef", "= 11.10.4"
+gem "chef-zero", "= 1.7.3"
+gem "hashie", "= 2.0.5"
+gem "json", "= 1.8.1"
+gem "mixlib-log", "= 1.6.0"
+gem "moneta", "= 0.6.0"
+gem "rack", "= 1.5.2"
+gem "diff-lcs", "= 1.2.5"
+gem "erubis", "= 2.7.0"
+gem "highline", "= 1.6.20"
+gem "mime-types", "= 1.25.1"
+gem "mixlib-authentication", "= 1.3.0"
+gem "mixlib-cli", "= 1.4.0"
+gem "mixlib-config", "= 2.1.0"
+gem "mixlib-shellout", "= 1.3.0"
+gem "net-ssh", "= 2.8.0"
+gem "net-ssh-multi", "= 1.2.0"
+gem "net-ssh-gateway", "= 1.2.0"
+gem "ohai", "= 6.20.0"
+gem "ipaddress", "= 0.8.0"
+gem "systemu", "= 2.5.2"
+gem "yajl-ruby", "= 1.2.0"
+gem "pry", "= 0.9.12.6"
+gem "coderay", "= 1.1.0"
+gem "method_source", "= 0.8.2"
+gem "slop", "= 3.4.7"
+gem "puma", "= 1.6.3"
+gem "rest-client", "= 1.6.7"
+E
+      expect(app.runtime_activate).to include(expected_gem_activates)
+      expected_load_path =  '$:.unshift "' + File.expand_path("../fixtures/example-app/lib", __FILE__) + '"'
+      expect(app.runtime_activate).to include(expected_load_path)
+    end
+
+    it "lists the app's executables" do
+      expected_executables = %w[app-binary-1 app-binary-2].map do |basename|
+        File.expand_path("../fixtures/example-app/bin/#{basename}", __FILE__)
+      end
+      expect(app.executables).to match_array(expected_executables)
+    end
+
+    it "generates an executable 'stub' for an executable in the app" do
+      app_binary_1_path = app.executables.grep(/app\-binary\-1/).first
+      executable_content = app.binstub(app_binary_1_path)
+
+      shebang = executable_content.lines.first
+      expect(shebang).to match(/^\#\!/)
+      expect(shebang).to include(Gem.ruby)
+
+      expect(executable_content).to include(app.runtime_activate)
+
+      load_binary = executable_content.lines.last
+      expect(load_binary).to eq(%Q[Kernel.load '#{app_binary_1_path}'\n])
+    end
+
+    it "generates executable stubs for all executables in the app" do
+      app.write_executable_stubs
+      binary_1 = File.join(target_bindir, "app-binary-1")
+      binary_2 = File.join(target_bindir, "app-binary-2")
+      expect(File.exist?(binary_1)).to be_true
+      expect(File.exist?(binary_2)).to be_true
+      expect(File.executable?(binary_1)).to be_true
+      expect(File.executable?(binary_1)).to be_true
+      expect(shellout!(binary_1).stdout).to eq("binary 1 ran\n")
+      expect(shellout!(binary_2).stdout).to eq("binary 2 ran\n")
     end
 
   end

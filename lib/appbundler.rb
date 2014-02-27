@@ -1,16 +1,35 @@
 require "appbundler/version"
+require 'bundler'
 require 'pp'
 
 module Appbundler
 
   class App
-    attr_accessor :app_root
 
-    def demo
-      @app_root = "/Users/ddeleo/oc/chef"
+    BINSTUB_FILE_VERSION=1
 
-      knife = app_executables.grep(/knife/).first
-      puts binstub(knife)
+    attr_reader :app_root
+    attr_reader :target_bin_dir
+
+    def self.demo
+      demo = new("/Users/ddeleo/oc/chef")
+
+      knife = demo.executables.grep(/knife/).first
+      puts demo.binstub(knife)
+    end
+
+    def initialize(app_root, target_bin_dir)
+      @app_root = app_root
+      @target_bin_dir = target_bin_dir
+    end
+
+    def write_executable_stubs
+      executables.each do |real_executable_path|
+        basename = File.basename(real_executable_path)
+        File.open(File.join(target_bin_dir, basename), "wb", 0755) do |f|
+          f.write(binstub(real_executable_path))
+        end
+      end
     end
 
     def name
@@ -25,6 +44,21 @@ module Appbundler
       "#!#{Gem.ruby}\n"
     end
 
+    # A specially formatted comment that documents the format version of the
+    # binstub files we generate.
+    #
+    # This comment should be unusual enough that we can reliably (enough)
+    # detect whether a binstub was created by Appbundler and parse it to learn
+    # what version of the format it uses. If we ever need to support reading or
+    # mutating existing binstubs, we'll know what file version we're starting
+    # with.
+    def file_format_comment
+      "#--APP_BUNDLER_BINSTUB_FORMAT_VERSION=#{BINSTUB_FILE_VERSION}--\n"
+    end
+
+    # Ruby code (as a string) that clears GEM_HOME and GEM_PATH environment
+    # variables. In an omnibus context, this is important so users can use
+    # things like rvm 
     def env_sanitizer
       %Q{ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil}
     end
@@ -41,10 +75,10 @@ module Appbundler
     end
 
     def binstub(bin_file)
-      shebang + runtime_activate + "Kernel.load '#{bin_file}'\n"
+      shebang + file_format_comment + runtime_activate + "Kernel.load '#{bin_file}'\n"
     end
 
-    def app_executables
+    def executables
       bin_dir_glob = File.join(app_root, "bin", "*")
       Dir[bin_dir_glob]
     end
@@ -93,5 +127,5 @@ module Appbundler
 end
 
 if __FILE__ == $PROGRAM_NAME
-  Appbundler::App.new.demo
+  Appbundler::App.demo
 end
