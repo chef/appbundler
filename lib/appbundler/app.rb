@@ -22,12 +22,19 @@ module Appbundler
     end
 
     def write_executable_stubs
-      executables.each do |real_executable_path|
+      executables_to_create = executables.map do |real_executable_path|
         basename = File.basename(real_executable_path)
-        File.open(File.join(target_bin_dir, basename), "wb", 0755) do |f|
+        stub_path = File.join(target_bin_dir, basename)
+        [real_executable_path, stub_path]
+      end
+
+      executables_to_create.each do |real_executable_path, stub_path|
+        File.open(stub_path, "wb", 0755) do |f|
           f.write(binstub(real_executable_path))
         end
       end
+
+      executables_to_create
     end
 
     def name
