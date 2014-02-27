@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'fileutils'
 require 'mixlib/shellout'
-require 'appbundler'
+require 'appbundler/app'
 
 describe Appbundler do
 
@@ -23,8 +23,7 @@ describe Appbundler do
     s
   end
 
-  let(:target_bindir) { File.expand_path("../test-tmp/bin", __FILE__) }
-
+  let(:target_bindir) { File.expand_path("../../test-tmp/bin", __FILE__) }
 
   context "given an app with multiple levels of dependencies" do
 
@@ -102,8 +101,9 @@ describe Appbundler do
   end
 
   context "when created with the example application" do
+    let(:fixtures_path) { File.expand_path("../../fixtures/", __FILE__) }
 
-    let(:app_root) { File.expand_path("../fixtures/example-app", __FILE__) }
+    let(:app_root) { File.join(fixtures_path, "example-app") }
 
     let(:app) do
       Appbundler::App.new(app_root, target_bindir)
@@ -164,13 +164,13 @@ gem "puma", "= 1.6.3"
 gem "rest-client", "= 1.6.7"
 E
       expect(app.runtime_activate).to include(expected_gem_activates)
-      expected_load_path =  '$:.unshift "' + File.expand_path("../fixtures/example-app/lib", __FILE__) + '"'
+      expected_load_path =  '$:.unshift "' + File.join(app_root, "lib") + '"'
       expect(app.runtime_activate).to include(expected_load_path)
     end
 
     it "lists the app's executables" do
       expected_executables = %w[app-binary-1 app-binary-2].map do |basename|
-        File.expand_path("../fixtures/example-app/bin/#{basename}", __FILE__)
+        File.join(app_root, "/bin", basename)
       end
       expect(app.executables).to match_array(expected_executables)
     end
