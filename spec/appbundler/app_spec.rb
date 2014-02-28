@@ -193,7 +193,7 @@ E
 
       expect(executable_content).to include(app.runtime_activate)
 
-      load_binary = executable_content.lines.last
+      load_binary = executable_content.lines.to_a.last
       expect(load_binary).to eq(%Q[Kernel.load '#{app_binary_1_path}'\n])
     end
 
