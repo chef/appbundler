@@ -61,6 +61,10 @@ describe Appbundler do
       app.stub(:gemfile_lock_specs).and_return(all_specs)
     end
 
+    it "finds the running ruby interpreter" do
+      expect(app.ruby).to eq(Gem.ruby)
+    end
+
     it "finds all runtime dependencies of the app" do
       # we want to find the minimum set of gems that we need to activate to run
       # the application. To do this, we look at the app's runtime deps and
@@ -96,6 +100,27 @@ describe Appbundler do
       expected = %Q{ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"}
       expect(app.env_sanitizer).to eq(expected)
       expect(app.runtime_activate).to include(expected)
+    end
+
+    context "on windows" do
+
+      let(:target_bindir) { "C:/opscode/chef/bin" }
+
+      before do
+        app.stub(:ruby).and_return("C:/opscode/chef/embedded/bin/ruby.exe")
+      end
+
+      it "computes the relative path to ruby" do
+        expect(app.ruby_relative_path).to eq("../embedded/bin/ruby.exe")
+      end
+
+      it "generates a batchfile stub" do
+        expected_batch_code=<<-E
+@ECHO OFF
+"%~dp0\\..\\embedded\\bin\\ruby.exe" "%~dpn0" %*
+E
+        expect(app.batchfile_stub).to eq(expected_batch_code)
+      end
     end
 
   end

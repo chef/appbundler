@@ -45,8 +45,30 @@ module Appbundler
       File.join(app_root, "Gemfile.lock")
     end
 
+    def ruby
+      Gem.ruby
+    end
+
+    def batchfile_stub
+      ruby_relpath_windows = ruby_relative_path.gsub('/', '\\')
+      <<-E
+@ECHO OFF
+"%~dp0\\#{ruby_relpath_windows}" "%~dpn0" %*
+E
+    end
+
+    # Relative path from #target_bin_dir to #ruby. This is used to
+    # generate batch files for windows in a way that the package can be
+    # installed in a custom location. On Unix we don't support custom
+    # install locations so this isn't needed.
+    def ruby_relative_path
+      ruby_pathname = Pathname.new(ruby)
+      bindir_pathname = Pathname.new(target_bin_dir)
+      ruby_pathname.relative_path_from(bindir_pathname).to_s
+    end
+
     def shebang
-      "#!#{Gem.ruby}\n"
+      "#!#{ruby}\n"
     end
 
     # A specially formatted comment that documents the format version of the
