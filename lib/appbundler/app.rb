@@ -63,9 +63,14 @@ module Appbundler
 
     # Ruby code (as a string) that clears GEM_HOME and GEM_PATH environment
     # variables. In an omnibus context, this is important so users can use
-    # things like rvm 
+    # things like rvm without accidentally pointing the app at rvm's
+    # ruby and gems.
+    #
+    # Environment sanitization can be skipped by setting the
+    # APPBUNDLER_ALLOW_RVM environment variable to "true". This feature
+    # exists to make tests run correctly on travis.ci (which uses rvm).
     def env_sanitizer
-      %Q{ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil}
+      %Q{ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"}
     end
 
     def runtime_activate
