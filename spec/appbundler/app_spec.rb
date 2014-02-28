@@ -17,7 +17,7 @@ describe Appbundler do
   end
 
   def shellout!(cmd)
-    s = Mixlib::ShellOut.new(cmd, :env => {"RUBYOPT" => nil})
+    s = Mixlib::ShellOut.new(cmd, :env => {"RUBYOPT" => nil, "BUNDLE_GEMFILE" => nil})
     s.run_command
     s.error!
     s
@@ -101,12 +101,20 @@ describe Appbundler do
   end
 
   context "when created with the example application" do
-    let(:fixtures_path) { File.expand_path("../../fixtures/", __FILE__) }
+    FIXTURES_PATH =  File.expand_path("../../fixtures/", __FILE__).freeze
 
-    let(:app_root) { File.join(fixtures_path, "example-app") }
+    APP_ROOT = File.join(FIXTURES_PATH, "example-app").freeze
+
+    let(:app_root) { APP_ROOT }
 
     let(:app) do
-      Appbundler::App.new(app_root, target_bindir)
+      Appbundler::App.new(APP_ROOT, target_bindir)
+    end
+
+    before(:all) do
+      Dir.chdir(APP_ROOT) do
+        shellout!("bundle install")
+      end
     end
 
     before do
