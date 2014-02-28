@@ -16,4 +16,54 @@ This provides the following benefits:
   app.
 * The app can load gems not included in the Gemfile/gemspec. Our use
   case for this is to load plugins (e.g., for knife and test kitchen).
+* A user can use rvm and still use the application (see below).
+* The application is protected from installation of incompatible
+  dependencies.
 
+# Usage
+
+Clone this project (gem coming soon) and bundle install:
+
+```
+git clone https://github.com/opscode/appbundler.git
+cd appbundler
+bundle install
+```
+
+Clone whatever project you want to appbundle somewhere else, and bundle
+install it:
+
+```
+mkdir ~/oc
+cd ~/oc
+git clone https://github.com/opscode/chef.git
+cd chef
+bundle install
+```
+
+Create a bin directory where your bundled binstubs will live:
+
+```
+mkdir ~/appbundle-bin
+# Add to your PATH if you like
+```
+
+Now you can app bundle your project (chef in our example):
+
+```
+bin/appbundler ~/oc/chef ~/appbundler-bin
+```
+
+Now you can run all of the app's executables with locked down deps:
+
+```
+~/appbunlder-bin/chef-client -v
+```
+
+
+# RVM
+
+The generated binstubs explicitly disable rvm, so the above won't work
+if you're using rvm. This is intentional, because our use case is for
+omnibus applications where rvm's environment variables can break the
+embedded application by making ruby look for gems in rvm's gem repo.
