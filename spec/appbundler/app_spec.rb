@@ -17,7 +17,7 @@ describe Appbundler do
   end
 
   def shellout!(cmd)
-    s = Mixlib::ShellOut.new(cmd, :env => {"RUBYOPT" => nil})
+    s = Mixlib::ShellOut.new(cmd, :env => {"RUBYOPT" => nil, "BUNDLE_GEMFILE" => nil,  "APPBUNDLER_ALLOW_RVM" => "true"})
     s.run_command
     s.error!
     s
@@ -93,7 +93,7 @@ describe Appbundler do
     end
 
     it "generates code to override GEM_HOME and GEM_PATH (e.g., rvm)" do
-      expected = %Q{ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil}
+      expected = %Q{ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"}
       expect(app.env_sanitizer).to eq(expected)
       expect(app.runtime_activate).to include(expected)
     end
@@ -101,12 +101,20 @@ describe Appbundler do
   end
 
   context "when created with the example application" do
-    let(:fixtures_path) { File.expand_path("../../fixtures/", __FILE__) }
+    FIXTURES_PATH =  File.expand_path("../../fixtures/", __FILE__).freeze
 
-    let(:app_root) { File.join(fixtures_path, "example-app") }
+    APP_ROOT = File.join(FIXTURES_PATH, "example-app").freeze
+
+    let(:app_root) { APP_ROOT }
 
     let(:app) do
-      Appbundler::App.new(app_root, target_bindir)
+      Appbundler::App.new(APP_ROOT, target_bindir)
+    end
+
+    before(:all) do
+      Dir.chdir(APP_ROOT) do
+        shellout!("bundle install")
+      end
     end
 
     before do
@@ -133,7 +141,7 @@ describe Appbundler do
 
     it "generates runtime activation code for the app" do
       expected_gem_activates=<<-E
-ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil
+ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"
 gem "chef", "= 11.10.4"
 gem "chef-zero", "= 1.7.3"
 gem "hashie", "= 2.0.5"
@@ -185,7 +193,7 @@ E
 
       expect(executable_content).to include(app.runtime_activate)
 
-      load_binary = executable_content.lines.last
+      load_binary = executable_content.lines.to_a.last
       expect(load_binary).to eq(%Q[Kernel.load '#{app_binary_1_path}'\n])
     end
 
