@@ -17,7 +17,7 @@ describe Appbundler do
   end
 
   def shellout!(cmd)
-    s = Mixlib::ShellOut.new(cmd, :env => {"RUBYOPT" => nil, "BUNDLE_GEMFILE" => nil})
+    s = Mixlib::ShellOut.new(cmd, :env => {"RUBYOPT" => nil, "BUNDLE_GEMFILE" => nil,  "APPBUNDLER_ALLOW_RVM" => "true"})
     s.run_command
     s.error!
     s
@@ -93,7 +93,7 @@ describe Appbundler do
     end
 
     it "generates code to override GEM_HOME and GEM_PATH (e.g., rvm)" do
-      expected = %Q{ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil}
+      expected = %Q{ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"}
       expect(app.env_sanitizer).to eq(expected)
       expect(app.runtime_activate).to include(expected)
     end
@@ -141,7 +141,7 @@ describe Appbundler do
 
     it "generates runtime activation code for the app" do
       expected_gem_activates=<<-E
-ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil
+ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"
 gem "chef", "= 11.10.4"
 gem "chef-zero", "= 1.7.3"
 gem "hashie", "= 2.0.5"
