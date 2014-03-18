@@ -22,7 +22,8 @@ This provides the following benefits:
 
 # Usage
 
-Clone this project (gem coming soon) and bundle install:
+Install via rubygems: `gem install appbundler` or clone this project and
+bundle install:
 
 ```
 git clone https://github.com/opscode/appbundler.git
