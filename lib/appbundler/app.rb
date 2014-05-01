@@ -32,6 +32,12 @@ module Appbundler
         File.open(stub_path, "wb", 0755) do |f|
           f.write(binstub(real_executable_path))
         end
+        if RUBY_PLATFORM =~ /mswin|mingw|windows/
+          batch_wrapper_path = "#{stub_path}.bat"
+          File.open(batch_wrapper_path, "wb", 0755) do |f|
+            f.write(batchfile_stub)
+          end
+        end
       end
 
       executables_to_create
