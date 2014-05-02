@@ -114,13 +114,14 @@ describe Appbundler do
         expect(app.ruby_relative_path).to eq("../embedded/bin/ruby.exe")
       end
 
-      it "generates a batchfile stub" do
+      it "generates batchfile stub code" do
         expected_batch_code=<<-E
 @ECHO OFF
 "%~dp0\\..\\embedded\\bin\\ruby.exe" "%~dpn0" %*
 E
         expect(app.batchfile_stub).to eq(expected_batch_code)
       end
+
     end
 
   end
@@ -232,6 +233,34 @@ E
       expect(File.executable?(binary_1)).to be_true
       expect(shellout!(binary_1).stdout).to eq("binary 1 ran\n")
       expect(shellout!(binary_2).stdout).to eq("binary 2 ran\n")
+    end
+
+    context "on windows" do
+
+      let(:expected_ruby_relpath) do
+        app.ruby_relative_path.gsub('/', '\\')
+      end
+
+      let(:expected_batch_code) do
+        <<-E
+@ECHO OFF
+"%~dp0\\#{expected_ruby_relpath}" "%~dpn0" %*
+E
+      end
+
+      before do
+        stub_const("RUBY_PLATFORM", "mingw")
+      end
+
+      it "creates a batchfile wrapper for each executable" do
+        app.write_executable_stubs
+        binary_1 = File.join(target_bindir, "app-binary-1.bat")
+        binary_2 = File.join(target_bindir, "app-binary-2.bat")
+        expect(File.exist?(binary_1)).to be_true
+        expect(File.exist?(binary_2)).to be_true
+        expect(IO.read(binary_1)).to eq(expected_batch_code)
+        expect(IO.read(binary_2)).to eq(expected_batch_code)
+      end
     end
 
   end
