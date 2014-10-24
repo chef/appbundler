@@ -107,18 +107,34 @@ E
         activate_code = ""
         activate_code << env_sanitizer << "\n"
         activate_code << statements.join("\n") << "\n"
-        activate_code << %Q|$:.unshift "#{app_lib_dir}"\n|
+        activate_code << %Q|$:.unshift(File.expand_path("#{relative_app_lib_dir}", File.dirname(__FILE__)))\n|
         activate_code
       end
     end
 
     def binstub(bin_file)
-      shebang + file_format_comment + runtime_activate + "Kernel.load '#{bin_file}'\n"
+      shebang + file_format_comment + runtime_activate + load_statement_for(bin_file)
+    end
+
+    def load_statement_for(bin_file)
+      "Kernel.load(File.expand_path('#{relative_bin_file(bin_file)}', File.dirname(__FILE__)))\n"
+    end
+
+    def relative_bin_file(bin_file)
+      bin_file_pathname = Pathname.new(bin_file)
+      bindir_pathname = Pathname.new(target_bin_dir)
+      bin_file_pathname.relative_path_from(bindir_pathname).to_s
     end
 
     def executables
       bin_dir_glob = File.join(app_root, "bin", "*")
       Dir[bin_dir_glob]
+    end
+
+    def relative_app_lib_dir
+      lib_dir_pathname = Pathname.new(app_lib_dir)
+      bindir_pathname = Pathname.new(target_bin_dir)
+      lib_dir_pathname.relative_path_from(bindir_pathname).to_s
     end
 
     def app_lib_dir

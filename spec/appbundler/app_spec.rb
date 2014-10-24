@@ -93,7 +93,9 @@ describe Appbundler do
     end
 
     it "adds the app code to the load path" do
-      expect(app.runtime_activate).to include('$:.unshift "/opt/app/embedded/apps/app/lib"')
+      # TODO: this value will depend on how far from / your clone of this repo is :(
+      expected_code_path = %Q[$:.unshift(File.expand_path("../../../../../../../opt/app/embedded/apps/app/lib", File.dirname(__FILE__)))]
+      expect(app.runtime_activate).to include(expected_code_path)
     end
 
     it "generates code to override GEM_HOME and GEM_PATH (e.g., rvm)" do
@@ -198,7 +200,7 @@ gem "puma", "= 1.6.3"
 gem "rest-client", "= 1.6.7"
 E
       expect(app.runtime_activate).to include(expected_gem_activates)
-      expected_load_path =  '$:.unshift "' + File.join(app_root, "lib") + '"'
+      expected_load_path = %q[$:.unshift(File.expand_path("../../fixtures/example-app/lib", File.dirname(__FILE__)))]
       expect(app.runtime_activate).to include(expected_load_path)
     end
 
@@ -220,7 +222,10 @@ E
       expect(executable_content).to include(app.runtime_activate)
 
       load_binary = executable_content.lines.to_a.last
-      expect(load_binary).to eq(%Q[Kernel.load '#{app_binary_1_path}'\n])
+
+      expected_load_path = %Q[Kernel.load(File.expand_path('../../fixtures/example-app/bin/app-binary-1', File.dirname(__FILE__)))\n]
+
+      expect(load_binary).to eq(expected_load_path)
     end
 
     it "generates executable stubs for all executables in the app" do
@@ -261,6 +266,7 @@ E
         expect(IO.read(binary_1)).to eq(expected_batch_code)
         expect(IO.read(binary_2)).to eq(expected_batch_code)
       end
+
     end
 
   end
