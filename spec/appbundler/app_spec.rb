@@ -93,8 +93,15 @@ describe Appbundler do
     end
 
     it "adds the app code to the load path" do
-      # TODO: this value will depend on how far from / your clone of this repo is :(
-      expected_code_path = %Q[$:.unshift(File.expand_path("../../../../../../../opt/app/embedded/apps/app/lib", File.dirname(__FILE__)))]
+      # Our test setup makes an executable that needs to load a path in the
+      # fictitious /opt/app/embedded/apps/app/lib path, so the relative path
+      # will traverse all the way to the root and then back up. Therefore, the
+      # expected output is dependent on how many directories deep this source
+      # clone is from the root:
+      relpath_to_root = Pathname.new("/").relative_path_from(Pathname.new(File.dirname(__FILE__))).to_s
+
+      expected_code_path =
+        %Q[$:.unshift(File.expand_path("#{relpath_to_root}/../opt/app/embedded/apps/app/lib", File.dirname(__FILE__)))]
       expect(app.runtime_activate).to include(expected_code_path)
     end
 
