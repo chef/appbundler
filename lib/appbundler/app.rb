@@ -127,8 +127,24 @@ E
     end
 
     def executables
-      bin_dir_glob = File.join(app_root, "bin", "*")
-      Dir[bin_dir_glob]
+      spec_path = ["#{app_root}/#{name}-#{RUBY_PLATFORM}.gemspec", 
+                   "#{app_root}/#{name}.gemspec"].detect do |f|
+        File.exists?(f)
+      end
+
+      if spec_path
+        spec = nil
+        Dir.chdir(app_root) do
+          spec = Gem::Specification::load(spec_path)
+        end
+        spec.executables.map do |e|
+          File.join(app_root, spec.bindir, e)
+        end
+      else
+        bin_dir_glob = File.join(app_root, "bin", "*")
+        Dir[bin_dir_glob]
+      end
+
     end
 
     def relative_app_lib_dir
