@@ -127,7 +127,7 @@ E
     end
 
     def executables
-      if available_specs.empty?
+      if available_gemspecs.empty?
         bin_dir_glob = File.join(app_root, "bin", "*")
         Dir[bin_dir_glob]
       else
@@ -135,14 +135,14 @@ E
       end
     end
 
-    def available_specs
-      @available_specs ||= Dir[File.join(app_root, "#{name}*.gemspec")]
+    def available_gemspecs
+      @available_gemspecs ||= Dir[File.join(app_root, "#{name}*.gemspec")]
     end
 
     def sorted_gemspecs
       # Gemspecs are sorted by the length of their name
       # Find all specs in app_root.
-      specs = available_specs.sort do |a, b|
+      specs = available_gemspecs.sort do |a, b|
         b.length <=> a.length
       end
 
