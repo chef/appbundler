@@ -160,9 +160,12 @@ E
     end
 
     def most_specific_gemspec
-      # The most specific gemspec is the longest gemspec that
-      # matches the current platform
-      #binding.pry
+      # The most specific gemspec is the longest gemspec that matches the 
+      # current platform. The reason for this is that the Chef projects that
+      # have platform specific gemspecs follow the pattern app.gemspec and
+      # app-arch-platform.gemspec. The platform specific gemspec always
+      # contains the generic gemspec, so we just need to find the gemspec
+      # with the longest path that also matches the current platform.
       @most_specific_gemspec ||= sorted_gemspecs.detect do |spec|
         Gem::Platform.match(spec.platform)
       end
