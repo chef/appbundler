@@ -127,28 +127,52 @@ E
     end
 
     def executables
-      specs = Dir[File.join(app_root, "#{name}*.gemspec")]
-      if not specs.empty?
-        # Find the executables listed in the gemspecs we found that match
-        # the current platform
-        exes = specs.map do |spec_path|
-          Dir.chdir(app_root) do
-            spec = Gem::Specification::load(spec_path)
-            if Gem::Platform.match(spec.platform)
-              spec.executables.map do |e|
-                File.join(app_root, spec.bindir, e)
-              end
-            else
-              []
-            end
-          end
-        end
-        exes.flatten.uniq
-      else
+      if available_specs.empty?
         bin_dir_glob = File.join(app_root, "bin", "*")
         Dir[bin_dir_glob]
+      else
+        executables_for_gemspec
+      end
+    end
+
+    def available_specs
+      @available_specs ||= Dir[File.join(app_root, "#{name}*.gemspec")]
+    end
+
+    def sorted_gemspecs
+      # Gemspecs are sorted by the length of their name
+      # Find all specs in app_root.
+      specs = available_specs.sort do |a, b|
+        b.length <=> a.length
       end
 
+      # Lazily load gemspecs, starting with the ones that are most
+      # specific
+      Enumerator.new do |y|
+        specs.each do |spec_path|
+          spec = nil
+          Dir.chdir(app_root) do
+            spec = Gem::Specification::load(spec_path)
+          end
+          y << spec
+        end
+      end
+    end
+
+    def most_specific_gemspec
+      # The most specific gemspec is the longest gemspec that
+      # matches the current platform
+      #binding.pry
+      @most_specific_gemspec ||= sorted_gemspecs.detect do |spec|
+        Gem::Platform.match(spec.platform)
+      end
+    end
+
+    def executables_for_gemspec
+      # Returns the executable for the most specific gemspec
+      most_specific_gemspec.executables.map do |e|
+        File.join(app_root, most_specific_gemspec.bindir, e)
+      end
     end
 
     def relative_app_lib_dir
