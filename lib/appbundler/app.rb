@@ -127,24 +127,55 @@ E
     end
 
     def executables
-      spec_path = ["#{app_root}/#{name}-#{RUBY_PLATFORM}.gemspec", 
-                   "#{app_root}/#{name}.gemspec"].detect do |f|
-        File.exists?(f)
-      end
-
-      if spec_path
-        spec = nil
-        Dir.chdir(app_root) do
-          spec = Gem::Specification::load(spec_path)
-        end
-        spec.executables.map do |e|
-          File.join(app_root, spec.bindir, e)
-        end
-      else
+      if available_gemspecs.empty?
         bin_dir_glob = File.join(app_root, "bin", "*")
         Dir[bin_dir_glob]
+      else
+        executables_for_gemspec
+      end
+    end
+
+    def available_gemspecs
+      @available_gemspecs ||= Dir[File.join(app_root, "#{name}*.gemspec")]
+    end
+
+    def sorted_gemspecs
+      # Gemspecs are sorted by the length of their name
+      # Find all specs in app_root.
+      specs = available_gemspecs.sort do |a, b|
+        b.length <=> a.length
       end
 
+      # Lazily load gemspecs, starting with the ones that are most
+      # specific
+      Enumerator.new do |y|
+        specs.each do |spec_path|
+          spec = nil
+          Dir.chdir(app_root) do
+            spec = Gem::Specification::load(spec_path)
+          end
+          y << spec
+        end
+      end
+    end
+
+    def most_specific_gemspec
+      # The most specific gemspec is the longest gemspec that matches the 
+      # current platform. The reason for this is that the Chef projects that
+      # have platform specific gemspecs follow the pattern app.gemspec and
+      # app-arch-platform.gemspec. The platform specific gemspec always
+      # contains the generic gemspec, so we just need to find the gemspec
+      # with the longest path that also matches the current platform.
+      @most_specific_gemspec ||= sorted_gemspecs.detect do |spec|
+        Gem::Platform.match(spec.platform)
+      end
+    end
+
+    def executables_for_gemspec
+      # Returns the executable for the most specific gemspec
+      most_specific_gemspec.executables.map do |e|
+        File.join(app_root, most_specific_gemspec.bindir, e)
+      end
     end
 
     def relative_app_lib_dir
