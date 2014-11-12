@@ -1,2 +1,0 @@
-#!/usr/bin/env ruby
-puts "exclude-me should not have run"
