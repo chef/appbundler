@@ -107,7 +107,6 @@ E
         activate_code = ""
         activate_code << env_sanitizer << "\n"
         activate_code << statements.join("\n") << "\n"
-        activate_code << %Q|$:.unshift(File.expand_path("#{relative_app_lib_dir}", File.dirname(__FILE__)))\n|
         activate_code
       end
     end
@@ -117,7 +116,15 @@ E
     end
 
     def load_statement_for(bin_file)
-      "Kernel.load(File.expand_path('#{relative_bin_file(bin_file)}', File.dirname(__FILE__)))\n"
+      <<-E
+bin_dir = File.dirname(__FILE__)
+if File.symlink?(__FILE__)
+  bin_dir = File.dirname(File.readlink(__FILE__))
+end
+
+$:.unshift(File.expand_path("#{relative_app_lib_dir}", bin_dir))
+Kernel.load(File.expand_path('#{relative_bin_file(bin_file)}', bin_dir))
+E
     end
 
     def relative_bin_file(bin_file)

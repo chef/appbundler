@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'tmpdir'
 require 'fileutils'
 require 'mixlib/shellout'
 require 'appbundler/app'
@@ -51,6 +52,8 @@ describe Appbundler do
       double_spec(:app, "1.0.0", [:first_level_dep_a, :first_level_dep_b])
     end
 
+    let(:bin_path) { File.join(target_bindir, "foo") }
+
     let(:app_root) { "/opt/app/embedded/apps/app" }
 
     let(:app) do
@@ -92,6 +95,17 @@ describe Appbundler do
       expect(app.runtime_activate).to_not include(%q{gem "app"})
     end
 
+    it "adds symlink resolution to the code that activates the app" do
+      symlink_code = <<-E
+bin_dir = File.dirname(__FILE__)
+if File.symlink?(__FILE__)
+  bin_dir = File.dirname(File.readlink(__FILE__))
+end
+E
+
+      expect(app.load_statement_for(bin_path)).to include(symlink_code)
+    end
+
     it "adds the app code to the load path" do
       # Our test setup makes an executable that needs to load a path in the
       # fictitious /opt/app/embedded/apps/app/lib path, so the relative path
@@ -101,8 +115,8 @@ describe Appbundler do
       relpath_to_root = Pathname.new("/").relative_path_from(Pathname.new(File.dirname(__FILE__))).to_s
 
       expected_code_path =
-        %Q[$:.unshift(File.expand_path("#{relpath_to_root}/../opt/app/embedded/apps/app/lib", File.dirname(__FILE__)))]
-      expect(app.runtime_activate).to include(expected_code_path)
+        %Q[$:.unshift(File.expand_path("#{relpath_to_root}/../opt/app/embedded/apps/app/lib", bin_dir))]
+      expect(app.load_statement_for(bin_path)).to include(expected_code_path)
     end
 
     it "generates code to override GEM_HOME and GEM_PATH (e.g., rvm)" do
@@ -207,8 +221,6 @@ gem "puma", "= 1.6.3"
 gem "rest-client", "= 1.6.7"
 E
       expect(app.runtime_activate).to include(expected_gem_activates)
-      expected_load_path = %q[$:.unshift(File.expand_path("../../fixtures/example-app/lib", File.dirname(__FILE__)))]
-      expect(app.runtime_activate).to include(expected_load_path)
     end
 
     it "should not contain exclude-me as a binary" do
@@ -234,7 +246,7 @@ E
 
       load_binary = executable_content.lines.to_a.last
 
-      expected_load_path = %Q[Kernel.load(File.expand_path('../../fixtures/example-app/bin/app-binary-1', File.dirname(__FILE__)))\n]
+      expected_load_path = %Q[Kernel.load(File.expand_path('../../fixtures/example-app/bin/app-binary-1', bin_dir))\n]
 
       expect(load_binary).to eq(expected_load_path)
     end
@@ -251,6 +263,37 @@ E
       expect(File.executable?(binary_1)).to be_true
       expect(shellout!(binary_1).stdout).to eq("binary 1 ran\n")
       expect(shellout!(binary_2).stdout).to eq("binary 2 ran\n")
+    end
+
+    context "and the executable is symlinked to a different directory" do
+
+      let(:symlinks_root_dir) do
+        Dir.mktmpdir
+      end
+
+      let(:symlinks_bin_dir) do
+        d = File.join(symlinks_root_dir, "bin")
+        FileUtils.mkdir(d)
+        d
+      end
+
+      let(:binary_symlinked_path) { File.join(symlinks_bin_dir, "app-binary-1") }
+
+      let(:binary_orignal_path) { File.join(target_bindir, "app-binary-1") }
+
+      before do
+        app.write_executable_stubs
+        FileUtils.ln_s(binary_orignal_path, binary_symlinked_path)
+      end
+
+      after do
+        FileUtils.rm_rf(symlinks_root_dir)
+      end
+
+      it "correctly runs the executable via the symlinked executable" do
+        expect(shellout!(binary_symlinked_path).stdout).to eq("binary 1 ran\n")
+      end
+
     end
 
     context "on windows" do
