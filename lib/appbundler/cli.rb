@@ -13,6 +13,12 @@ Usage: appbundler APPLICATION_DIR BINSTUB_DIR
   BINSTUB_DIR is the directory where you want generated executables to be written
 BANNER
 
+    attr_reader :argv
+
+    attr_reader :app_path
+    attr_reader :bin_path
+
+
     option :version,
       :short => '-v',
       :long => '--version',
@@ -36,11 +42,6 @@ BANNER
       cli.validate!
       cli.run
     end
-
-    attr_reader :argv
-
-    attr_reader :app_path
-    attr_reader :bin_path
 
     def initialize(argv)
       @argv = argv
