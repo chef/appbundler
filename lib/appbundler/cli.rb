@@ -1,11 +1,38 @@
 require 'appbundler/version'
 require 'appbundler/app'
+require 'mixlib/cli'
 
 module Appbundler
   class CLI
+    include Mixlib::CLI
+
+    banner(<<-BANNER)
+Usage: appbundler APPLICATION_DIR BINSTUB_DIR
+
+  APPLICATION_DIR is the root directory of your app
+  BINSTUB_DIR is the directory where you want generated executables to be written
+BANNER
+
+    option :version,
+      :short => '-v',
+      :long => '--version',
+      :description => 'Show appbundler version',
+      :boolean => true,
+      :proc => lambda {|v| $stdout.puts("Appbundler Version: #{::Appbundler::VERSION}")},
+      :exit => 0
+
+    option :help,
+      :short => "-h",
+      :long => "--help",
+      :description => "Show this message",
+      :on => :tail,
+      :boolean => true,
+      :show_options => true,
+      :exit => 0
 
     def self.run(argv)
       cli = new(argv)
+      cli.handle_options
       cli.validate!
       cli.run
     end
@@ -17,17 +44,19 @@ module Appbundler
 
     def initialize(argv)
       @argv = argv
+      super()
+    end
+
+    def handle_options
+      parse_options(@argv)
     end
 
     def validate!
-      if argv.any? {|arg| %w{-h --help help -v --version}.include?(arg) }
-        $stdout.print(usage)
-        exit 0
-      elsif argv.size != 2
+      if cli_arguments.size != 2
         usage_and_exit!
       else
-        @app_path = File.expand_path(argv[0])
-        @bin_path = File.expand_path(argv[1])
+        @app_path = File.expand_path(cli_arguments[0])
+        @bin_path = File.expand_path(cli_arguments[1])
         verify_app_path
         verify_bin_path
       end
@@ -62,18 +91,8 @@ module Appbundler
     end
 
     def usage_and_exit!
-      err(usage)
+      err(banner)
       exit 1
     end
-
-    def usage
-      <<-E
-Usage: appbundler APPLICATION_DIR BINSTUB_DIR
-
-  APPLICATION_DIR is the root directory of your app
-  BINSTUB_DIR is the directory where you want generated executables to be written
-E
-    end
-
   end
 end
