@@ -1,4 +1,5 @@
 require 'appbundler/version'
+require 'appbundler/config'
 require 'appbundler/app'
 require 'mixlib/cli'
 
@@ -35,6 +36,11 @@ BANNER
       :boolean => true,
       :show_options => true,
       :exit => 0
+
+    option :exclude,
+      :long => '--exclude BIN',
+      :description => 'Binary to exclude',
+      :proc => lambda {|bin| Appbundler::Config.exclusions << bin}
 
     def self.run(argv)
       cli = new(argv)
