@@ -66,6 +66,7 @@ BANNER
         @bin_path = File.expand_path(cli_arguments[1])
         verify_app_path
         verify_bin_path
+        verify_excludes
       end
     end
 
@@ -82,6 +83,18 @@ BANNER
     def verify_bin_path
       if !File.directory?(bin_path)
         err("BINSTUB_DIR `#{bin_path}' is not a directory or doesn't exist")
+        usage_and_exit!
+      end
+    end
+
+    def verify_excludes
+      missing_bins = ::Appbundler::Config.exclusions.reject do |bin|
+        File.exists?(File.join(app_path, 'bin', bin))
+      end
+      if not missing_bins.empty?
+        missing_bins.each do |bin|
+          err("APPLICATION_DIR/bin does not contain #{bin}")
+        end
         usage_and_exit!
       end
     end
