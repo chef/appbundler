@@ -100,7 +100,7 @@ BANNER
     end
 
     def run
-      created_stubs = App.new(app_path, bin_path).write_executable_stubs
+      created_stubs = App.new(app_path, bin_path, ::Appbundler::Config.exclusions).write_executable_stubs
       created_stubs.each do |real_executable_path, stub_path|
         $stdout.puts "Generated binstub #{stub_path} => #{real_executable_path}"
       end

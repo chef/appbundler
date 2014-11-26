@@ -57,7 +57,7 @@ describe Appbundler do
     let(:app_root) { "/opt/app/embedded/apps/app" }
 
     let(:app) do
-      Appbundler::App.new(app_root, target_bindir)
+      Appbundler::App.new(app_root, target_bindir, [])
     end
 
     before do
@@ -157,7 +157,7 @@ E
     let(:app_root) { APP_ROOT }
 
     let(:app) do
-      Appbundler::App.new(APP_ROOT, target_bindir)
+      Appbundler::App.new(APP_ROOT, target_bindir, [])
     end
 
     before(:all) do

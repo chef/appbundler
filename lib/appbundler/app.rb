@@ -16,9 +16,10 @@ module Appbundler
       puts demo.binstub(knife)
     end
 
-    def initialize(app_root, target_bin_dir)
+    def initialize(app_root, target_bin_dir, exclusions)
       @app_root = app_root
       @target_bin_dir = target_bin_dir
+      @exclusions = exclusions
     end
 
     def write_executable_stubs
@@ -135,7 +136,9 @@ E
 
     def executables
       bin_dir_glob = File.join(app_root, "bin", "*")
-      Dir[bin_dir_glob]
+      Dir[bin_dir_glob].reject do |bin_path|
+        @exclusions.include? File.basename(bin_path)
+      end
     end
 
     def relative_app_lib_dir
