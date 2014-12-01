@@ -57,7 +57,7 @@ describe Appbundler do
     let(:app_root) { "/opt/app/embedded/apps/app" }
 
     let(:app) do
-      Appbundler::App.new(app_root, target_bindir)
+      Appbundler::App.new(app_root, target_bindir, [])
     end
 
     before do
@@ -157,7 +157,7 @@ E
     let(:app_root) { APP_ROOT }
 
     let(:app) do
-      Appbundler::App.new(APP_ROOT, target_bindir)
+      Appbundler::App.new(APP_ROOT, target_bindir, ['exclude-me'])
     end
 
     before(:all) do
@@ -223,6 +223,10 @@ E
       expect(app.runtime_activate).to include(expected_gem_activates)
     end
 
+    it "should not contain exclude-me as a binary" do
+      expect(app.executables).not_to include(File.join(app_root, "/bin", "exclude-me"))
+    end
+
     it "lists the app's executables" do
       expected_executables = %w[app-binary-1 app-binary-2].map do |basename|
         File.join(app_root, "/bin", basename)
@@ -251,8 +255,10 @@ E
       app.write_executable_stubs
       binary_1 = File.join(target_bindir, "app-binary-1")
       binary_2 = File.join(target_bindir, "app-binary-2")
+      excluded_binary = File.join(target_bindir, "exclude-me")
       expect(File.exist?(binary_1)).to be_true
       expect(File.exist?(binary_2)).to be_true
+      expect(File.exist?(excluded_binary)).to be_false
       expect(File.executable?(binary_1)).to be_true
       expect(File.executable?(binary_1)).to be_true
       expect(shellout!(binary_1).stdout).to eq("binary 1 ran\n")

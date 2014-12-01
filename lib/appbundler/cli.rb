@@ -1,4 +1,5 @@
 require 'appbundler/version'
+require 'appbundler/config'
 require 'appbundler/app'
 require 'mixlib/cli'
 
@@ -12,6 +13,12 @@ Usage: appbundler APPLICATION_DIR BINSTUB_DIR
   APPLICATION_DIR is the root directory of your app
   BINSTUB_DIR is the directory where you want generated executables to be written
 BANNER
+
+    attr_reader :argv
+
+    attr_reader :app_path
+    attr_reader :bin_path
+
 
     option :version,
       :short => '-v',
@@ -30,17 +37,17 @@ BANNER
       :show_options => true,
       :exit => 0
 
+    option :exclude,
+      :long => '--exclude BIN',
+      :description => 'Binary to exclude',
+      :proc => lambda {|bin| Appbundler::Config.exclusions << bin}
+
     def self.run(argv)
       cli = new(argv)
       cli.handle_options
       cli.validate!
       cli.run
     end
-
-    attr_reader :argv
-
-    attr_reader :app_path
-    attr_reader :bin_path
 
     def initialize(argv)
       @argv = argv
@@ -59,6 +66,7 @@ BANNER
         @bin_path = File.expand_path(cli_arguments[1])
         verify_app_path
         verify_bin_path
+        verify_excludes
       end
     end
 
@@ -79,8 +87,20 @@ BANNER
       end
     end
 
+    def verify_excludes
+      missing_bins = ::Appbundler::Config.exclusions.reject do |bin|
+        File.exists?(File.join(app_path, 'bin', bin))
+      end
+      if not missing_bins.empty?
+        missing_bins.each do |bin|
+          err("APPLICATION_DIR/bin does not contain #{bin}")
+        end
+        usage_and_exit!
+      end
+    end
+
     def run
-      created_stubs = App.new(app_path, bin_path).write_executable_stubs
+      created_stubs = App.new(app_path, bin_path, ::Appbundler::Config.exclusions).write_executable_stubs
       created_stubs.each do |real_executable_path, stub_path|
         $stdout.puts "Generated binstub #{stub_path} => #{real_executable_path}"
       end
