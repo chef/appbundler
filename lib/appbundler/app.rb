@@ -172,6 +172,7 @@ E
 
     def add_dependencies_from(spec, collected_deps=[])
       spec.dependencies.each do |dep|
+        next if dep.name == "bundler"
         next if collected_deps.any? {|s| s.name == dep.name }
         next_spec = spec_for(dep.name)
         collected_deps << next_spec
