@@ -116,14 +116,15 @@ E
     end
 
     def load_statement_for(bin_file)
+      name, version = app_spec.name, app_spec.version
+      bin_basename = File.basename(bin_file)
       <<-E
-bin_dir = File.dirname(__FILE__)
-if File.symlink?(__FILE__)
-  bin_dir = File.dirname(File.readlink(__FILE__))
-end
+gem "#{name}", "= #{version}"
 
-$:.unshift(File.expand_path("#{relative_app_lib_dir}", bin_dir))
-Kernel.load(File.expand_path('#{relative_bin_file(bin_file)}', bin_dir))
+spec = Gem::Specification.find_by_name("#{name}", "= #{version}")
+bin_file = spec.bin_file("#{bin_basename}")
+
+Kernel.load(bin_file)
 E
     end
 
