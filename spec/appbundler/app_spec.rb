@@ -142,7 +142,7 @@ E
   context "when created with the example application" do
     FIXTURES_PATH =  File.expand_path("../../fixtures/", __FILE__).freeze
 
-    APP_ROOT = File.join(FIXTURES_PATH, "example-app").freeze
+    APP_ROOT = File.join(FIXTURES_PATH, "appbundler-example-app").freeze
 
     let(:app_root) { APP_ROOT }
 
@@ -153,6 +153,8 @@ E
     before(:all) do
       Dir.chdir(APP_ROOT) do
         shellout!("bundle install")
+        shellout!("gem build appbundler-example-app.gemspec")
+        shellout!("gem install appbundler-example-app-1.0.0.gem")
       end
     end
 
@@ -162,6 +164,7 @@ E
     end
 
     after(:all) do
+      shellout!("gem uninstall appbundler-example-app -a -q -x")
       FileUtils.rm_rf(target_bindir) if File.exist?(target_bindir)
     end
 
@@ -170,7 +173,7 @@ E
     end
 
     it "names the app using the directory basename" do
-      expect(app.name).to eq("example-app")
+      expect(app.name).to eq("appbundler-example-app")
     end
 
     it "lists the app's dependencies" do
@@ -181,34 +184,52 @@ E
     it "generates runtime activation code for the app" do
       expected_gem_activates=<<-E
 ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"
-gem "chef", "= 11.10.4"
-gem "chef-zero", "= 1.7.3"
-gem "hashie", "= 2.0.5"
-gem "json", "= 1.8.1"
+gem "chef", "= 12.4.1"
+gem "chef-config", "= 12.4.1"
+gem "mixlib-config", "= 2.2.1"
+gem "mixlib-shellout", "= 2.2.0"
+gem "chef-zero", "= 4.3.0"
+gem "ffi-yajl", "= 2.2.2"
+gem "libyajl2", "= 1.2.0"
+gem "hashie", "= 2.1.2"
 gem "mixlib-log", "= 1.6.0"
-gem "moneta", "= 0.6.0"
-gem "rack", "= 1.5.2"
+gem "rack", "= 1.6.4"
+gem "uuidtools", "= 2.1.5"
 gem "diff-lcs", "= 1.2.5"
 gem "erubis", "= 2.7.0"
-gem "highline", "= 1.6.20"
-gem "mime-types", "= 1.25.1"
+gem "highline", "= 1.7.3"
 gem "mixlib-authentication", "= 1.3.0"
-gem "mixlib-cli", "= 1.4.0"
-gem "mixlib-config", "= 2.1.0"
-gem "mixlib-shellout", "= 1.3.0"
-gem "net-ssh", "= 2.8.0"
-gem "net-ssh-multi", "= 1.2.0"
+gem "mixlib-cli", "= 1.5.0"
+gem "net-ssh", "= 2.9.2"
+gem "net-ssh-multi", "= 1.2.1"
 gem "net-ssh-gateway", "= 1.2.0"
-gem "ohai", "= 6.20.0"
+gem "ohai", "= 8.5.1"
+gem "ffi", "= 1.9.10"
 gem "ipaddress", "= 0.8.0"
-gem "systemu", "= 2.5.2"
-gem "yajl-ruby", "= 1.2.0"
+gem "mime-types", "= 2.6.1"
+gem "rake", "= 10.1.1"
+gem "systemu", "= 2.6.5"
+gem "wmi-lite", "= 1.0.0"
+gem "plist", "= 3.1.0"
 gem "pry", "= 0.9.12.6"
 gem "coderay", "= 1.1.0"
 gem "method_source", "= 0.8.2"
 gem "slop", "= 3.4.7"
-gem "puma", "= 1.6.3"
-gem "rest-client", "= 1.6.7"
+gem "rspec-core", "= 3.3.2"
+gem "rspec-support", "= 3.3.0"
+gem "rspec-expectations", "= 3.3.1"
+gem "rspec-mocks", "= 3.3.2"
+gem "rspec_junit_formatter", "= 0.2.3"
+gem "builder", "= 3.2.2"
+gem "serverspec", "= 2.23.1"
+gem "multi_json", "= 1.11.2"
+gem "rspec", "= 3.3.0"
+gem "rspec-its", "= 1.2.0"
+gem "specinfra", "= 2.43.3"
+gem "net-scp", "= 1.2.1"
+gem "net-telnet", "= 0.1.1"
+gem "sfl", "= 2.2"
+gem "syslog-logger", "= 1.6.8"
 E
       expect(app.runtime_activate).to include(expected_gem_activates)
     end
@@ -237,7 +258,7 @@ E
       expect(load_binary).to eq(expected_load_path)
     end
 
-    it "generates executable stubs for all executables in the app", :pending do
+    it "generates executable stubs for all executables in the app" do
       app.write_executable_stubs
       binary_1 = File.join(target_bindir, "app-binary-1")
       binary_2 = File.join(target_bindir, "app-binary-2")
@@ -274,7 +295,7 @@ E
         FileUtils.rm_rf(symlinks_root_dir)
       end
 
-      it "correctly runs the executable via the symlinked executable", :pending do
+      it "correctly runs the executable via the symlinked executable" do
         expect(shellout!(binary_symlinked_path).stdout).to eq("binary 1 ran\n")
       end
 
