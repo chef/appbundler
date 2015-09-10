@@ -24,7 +24,9 @@ describe Appbundler do
     s
   end
 
-  let(:target_bindir) { File.expand_path("../../test-tmp/bin", __FILE__) }
+  def target_bindir
+    File.expand_path("../../test-tmp/bin", __FILE__)
+  end
 
   context "given an app with multiple levels of dependencies" do
 
@@ -80,7 +82,7 @@ describe Appbundler do
       expect(app.runtime_dep_specs).to include(second_level_dep_a_a)
       expect(app.runtime_dep_specs).to include(second_level_dep_b_a)
       expect(app.runtime_dep_specs).to include(second_level_dep_shared)
-      expect(app.runtime_dep_specs.select {|s| s == second_level_dep_shared}).to have(1).item
+      expect(app.runtime_dep_specs.select {|s| s == second_level_dep_shared}.size).to eq(1)
     end
 
     it "generates gem activation code for the app" do
@@ -251,10 +253,10 @@ E
       app.write_executable_stubs
       binary_1 = File.join(target_bindir, "app-binary-1")
       binary_2 = File.join(target_bindir, "app-binary-2")
-      expect(File.exist?(binary_1)).to be_true
-      expect(File.exist?(binary_2)).to be_true
-      expect(File.executable?(binary_1)).to be_true
-      expect(File.executable?(binary_1)).to be_true
+      expect(File.exist?(binary_1)).to be(true)
+      expect(File.exist?(binary_2)).to be(true)
+      expect(File.executable?(binary_1)).to be(true)
+      expect(File.executable?(binary_1)).to be(true)
       expect(shellout!(binary_1).stdout).to eq("binary 1 ran\n")
       expect(shellout!(binary_2).stdout).to eq("binary 2 ran\n")
     end
@@ -311,8 +313,8 @@ E
         app.write_executable_stubs
         binary_1 = File.join(target_bindir, "app-binary-1.bat")
         binary_2 = File.join(target_bindir, "app-binary-2.bat")
-        expect(File.exist?(binary_1)).to be_true
-        expect(File.exist?(binary_2)).to be_true
+        expect(File.exist?(binary_1)).to be(true)
+        expect(File.exist?(binary_2)).to be(true)
         expect(IO.read(binary_1)).to eq(expected_batch_code)
         expect(IO.read(binary_2)).to eq(expected_batch_code)
       end
