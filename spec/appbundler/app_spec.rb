@@ -63,7 +63,7 @@ describe Appbundler do
     end
 
     before do
-      app.stub(:gemfile_lock_specs).and_return(all_specs)
+      allow(app).to receive(:gemfile_lock_specs).and_return(all_specs)
     end
 
     it "finds the running ruby interpreter" do
@@ -132,7 +132,7 @@ E
       let(:target_bindir) { "C:/opscode/chef/bin" }
 
       before do
-        app.stub(:ruby).and_return("C:/opscode/chef/embedded/bin/ruby.exe")
+        allow(app).to receive(:ruby).and_return("C:/opscode/chef/embedded/bin/ruby.exe")
       end
 
       it "computes the relative path to ruby" do
@@ -182,7 +182,7 @@ E
     end
 
     it "names the app using the directory basename" do
-      app.name.should == "example-app"
+      expect(app.name).to eq("example-app")
     end
 
     it "lists the app's dependencies" do
