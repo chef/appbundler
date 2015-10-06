@@ -129,7 +129,7 @@ E
     end
 
     def executables
-      spec = Gem::Specification.find_by_name(app_spec.name, app_spec.version)
+      spec = app_gemspec
       spec.executables.map {|e| spec.bin_file(e)}
     end
 
@@ -139,6 +139,10 @@ E
 
     def app_dependency_names
       @app_dependency_names ||= app_spec.dependencies.map(&:name)
+    end
+
+    def app_gemspec
+      Gem::Specification.find_by_name(app_spec.name, app_spec.version)
     end
 
     def app_spec
