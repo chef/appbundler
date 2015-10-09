@@ -155,6 +155,7 @@ E
         shellout!("bundle install")
         shellout!("gem build appbundler-example-app.gemspec")
         shellout!("gem install appbundler-example-app-1.0.0.gem")
+        Gem.clear_paths
       end
     end
 
@@ -235,8 +236,9 @@ E
     end
 
     it "lists the app's executables" do
+      spec = Gem::Specification.find_by_name("appbundler-example-app", "= 1.0.0")
       expected_executables = %w[app-binary-1 app-binary-2].map do |basename|
-        File.join(app_root, "/bin", basename)
+        File.join(spec.gem_dir, "/bin", basename)
       end
       expect(app.executables).to match_array(expected_executables)
     end
@@ -264,13 +266,13 @@ E
       binary_2 = File.join(target_bindir, "app-binary-2")
       expect(File.exist?(binary_1)).to be(true)
       expect(File.exist?(binary_2)).to be(true)
-      expect(File.executable?(binary_1)).to be(true)
-      expect(File.executable?(binary_1)).to be(true)
-      expect(shellout!(binary_1).stdout).to eq("binary 1 ran\n")
-      expect(shellout!(binary_2).stdout).to eq("binary 2 ran\n")
+      expect(File.executable?(binary_1) || File.exists?(binary_1 + ".bat")).to be(true)
+      expect(File.executable?(binary_1) || File.exists?(binary_1 + ".bat")).to be(true)
+      expect(shellout!(binary_1).stdout.strip).to eq("binary 1 ran")
+      expect(shellout!(binary_2).stdout.strip).to eq("binary 2 ran")
     end
 
-    context "and the executable is symlinked to a different directory" do
+    context "and the executable is symlinked to a different directory", :not_supported_on_windows do
 
       let(:symlinks_root_dir) do
         Dir.mktmpdir

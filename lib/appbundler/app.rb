@@ -128,25 +128,9 @@ Kernel.load(bin_file)
 E
     end
 
-    def relative_bin_file(bin_file)
-      bin_file_pathname = Pathname.new(bin_file)
-      bindir_pathname = Pathname.new(target_bin_dir)
-      bin_file_pathname.relative_path_from(bindir_pathname).to_s
-    end
-
     def executables
-      bin_dir_glob = File.join(app_root, "bin", "*")
-      Dir[bin_dir_glob]
-    end
-
-    def relative_app_lib_dir
-      lib_dir_pathname = Pathname.new(app_lib_dir)
-      bindir_pathname = Pathname.new(target_bin_dir)
-      lib_dir_pathname.relative_path_from(bindir_pathname).to_s
-    end
-
-    def app_lib_dir
-      File.join(app_root, "lib")
+      spec = app_gemspec
+      spec.executables.map {|e| spec.bin_file(e)}
     end
 
     def runtime_dep_specs
@@ -155,6 +139,10 @@ E
 
     def app_dependency_names
       @app_dependency_names ||= app_spec.dependencies.map(&:name)
+    end
+
+    def app_gemspec
+      Gem::Specification.find_by_name(app_spec.name, app_spec.version)
     end
 
     def app_spec

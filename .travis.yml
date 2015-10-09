@@ -7,5 +7,6 @@ branches:
   only:
     - master
 
-script: bundle exec rspec --color --format progress
+# The integration tests need to see installed gems.
+script: rspec --color --format progress
 

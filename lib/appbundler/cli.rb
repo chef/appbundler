@@ -9,8 +9,11 @@ module Appbundler
     banner(<<-BANNER)
 Usage: appbundler APPLICATION_DIR BINSTUB_DIR
 
-  APPLICATION_DIR is the root directory of your app
+  APPLICATION_DIR is the root directory to a working copy of your app
   BINSTUB_DIR is the directory where you want generated executables to be written
+
+Your bundled application must already be gem installed.  Generated binstubs
+will point to the gem, not your working copy.
 BANNER
 
     option :version,
@@ -59,6 +62,7 @@ BANNER
         @bin_path = File.expand_path(cli_arguments[1])
         verify_app_path
         verify_bin_path
+        verify_gem_installed
       end
     end
 
@@ -67,7 +71,7 @@ BANNER
         err("APPLICATION_DIR `#{app_path}' is not a directory or doesn't exist")
         usage_and_exit!
       elsif !File.exist?(File.join(app_path, "Gemfile.lock"))
-        err("APPLICATION_DIR does not contain require Gemfile.lock")
+        err("APPLICATION_DIR does not contain required Gemfile.lock")
         usage_and_exit!
       end
     end
@@ -77,6 +81,15 @@ BANNER
         err("BINSTUB_DIR `#{bin_path}' is not a directory or doesn't exist")
         usage_and_exit!
       end
+    end
+
+    def verify_gem_installed
+      app = App.new(app_path, bin_path)
+      app.app_gemspec
+    rescue Gem::LoadError
+      err("Unable to find #{app.app_spec.name} #{app.app_spec.version} installed as a gem")
+      err("You must install the top-level app as a gem before calling app-bundler")
+      usage_and_exit!
     end
 
     def run
