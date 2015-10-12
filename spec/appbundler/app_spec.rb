@@ -272,6 +272,13 @@ E
       expect(shellout!(binary_2).stdout.strip).to eq("binary 2 ran")
     end
 
+    it "copies over Gemfile.lock to the gem directory" do
+      spec = Gem::Specification.find_by_name("appbundler-example-app", "= 1.0.0")
+      gem_path = spec.gem_dir
+      app.copy_bundler_env
+      expect(File.exists?(File.join(gem_path, 'Gemfile.lock'))).to be(true)
+    end
+
     context "and the executable is symlinked to a different directory", :not_supported_on_windows do
 
       let(:symlinks_root_dir) do
