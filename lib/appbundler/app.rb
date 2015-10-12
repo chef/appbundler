@@ -21,6 +21,16 @@ module Appbundler
       @target_bin_dir = target_bin_dir
     end
 
+    # Copy over any .bundler and Gemfile.lock files to the target gem
+    # directory.  This will let us run tests from under that directory.
+    def copy_bundler_env
+      gem_path = app_gemspec.gem_dir
+      FileUtils.cp(gemfile_lock, gem_path)
+      if File.exist?(dot_bundle_dir) && File.directory?(dot_bundle_dir)
+        FileUtils.cp_r(dot_bundle_dir, gem_path)
+      end
+    end
+
     def write_executable_stubs
       executables_to_create = executables.map do |real_executable_path|
         basename = File.basename(real_executable_path)
@@ -45,6 +55,10 @@ module Appbundler
 
     def name
       File.basename(app_root)
+    end
+
+    def dot_bundle_dir
+      File.join(app_root, ".bundle")
     end
 
     def gemfile_lock
