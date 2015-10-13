@@ -152,6 +152,11 @@ E
 
     before(:all) do
       Dir.chdir(APP_ROOT) do
+        if windows?
+          FileUtils.cp("Gemfile.lock.windows", "Gemfile.lock")
+        else
+          FileUtils.cp("Gemfile.lock.unix", "Gemfile.lock")
+        end
         shellout!("bundle install")
         shellout!("gem build appbundler-example-app.gemspec")
         shellout!("gem install appbundler-example-app-1.0.0.gem")
@@ -167,6 +172,7 @@ E
     after(:all) do
       shellout!("gem uninstall appbundler-example-app -a -q -x")
       FileUtils.rm_rf(target_bindir) if File.exist?(target_bindir)
+      FileUtils.rm(File.join(APP_ROOT, "Gemfile.lock"))
     end
 
     it "initializes ok" do
@@ -183,7 +189,70 @@ E
     end
 
     it "generates runtime activation code for the app" do
-      expected_gem_activates=<<-E
+      expected_gem_activates= if windows?
+                          <<-E
+ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"
+gem "chef", "= 12.4.1"
+gem "chef-config", "= 12.4.1"
+gem "mixlib-config", "= 2.2.1"
+gem "mixlib-shellout", "= 2.2.0"
+gem "win32-process", "= 0.7.5"
+gem "ffi", "= 1.9.10"
+gem "chef-zero", "= 4.3.0"
+gem "ffi-yajl", "= 2.2.2"
+gem "libyajl2", "= 1.2.0"
+gem "hashie", "= 2.1.2"
+gem "mixlib-log", "= 1.6.0"
+gem "rack", "= 1.6.4"
+gem "uuidtools", "= 2.1.5"
+gem "diff-lcs", "= 1.2.5"
+gem "erubis", "= 2.7.0"
+gem "highline", "= 1.7.3"
+gem "mixlib-authentication", "= 1.3.0"
+gem "mixlib-cli", "= 1.5.0"
+gem "net-ssh", "= 2.9.2"
+gem "net-ssh-multi", "= 1.2.1"
+gem "net-ssh-gateway", "= 1.2.0"
+gem "ohai", "= 8.5.1"
+gem "ipaddress", "= 0.8.0"
+gem "mime-types", "= 2.6.1"
+gem "rake", "= 10.1.1"
+gem "systemu", "= 2.6.5"
+gem "wmi-lite", "= 1.0.0"
+gem "plist", "= 3.1.0"
+gem "pry", "= 0.9.12.6"
+gem "coderay", "= 1.1.0"
+gem "method_source", "= 0.8.2"
+gem "slop", "= 3.4.7"
+gem "win32console", "= 1.3.2"
+gem "rspec-core", "= 3.3.2"
+gem "rspec-support", "= 3.3.0"
+gem "rspec-expectations", "= 3.3.1"
+gem "rspec-mocks", "= 3.3.2"
+gem "rspec_junit_formatter", "= 0.2.3"
+gem "builder", "= 3.2.2"
+gem "serverspec", "= 2.23.1"
+gem "multi_json", "= 1.11.2"
+gem "rspec", "= 3.3.0"
+gem "rspec-its", "= 1.2.0"
+gem "specinfra", "= 2.43.3"
+gem "net-scp", "= 1.2.1"
+gem "net-telnet", "= 0.1.1"
+gem "sfl", "= 2.2"
+gem "syslog-logger", "= 1.6.8"
+gem "win32-api", "= 1.5.3"
+gem "win32-dir", "= 0.5.0"
+gem "win32-event", "= 0.6.1"
+gem "win32-ipc", "= 0.6.6"
+gem "win32-eventlog", "= 0.6.3"
+gem "win32-mmap", "= 0.4.1"
+gem "win32-mutex", "= 0.4.2"
+gem "win32-service", "= 0.8.6"
+gem "windows-api", "= 0.4.4"
+gem "windows-pr", "= 1.2.4"
+E
+                          else
+          <<-E
 ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"
 gem "chef", "= 12.4.1"
 gem "chef-config", "= 12.4.1"
@@ -232,6 +301,7 @@ gem "net-telnet", "= 0.1.1"
 gem "sfl", "= 2.2"
 gem "syslog-logger", "= 1.6.8"
 E
+                            end
       expect(app.runtime_activate).to include(expected_gem_activates)
     end
 
@@ -279,6 +349,13 @@ E
       expect(File.exists?(File.join(gem_path, 'Gemfile.lock'))).to be(true)
     end
 
+    it "copies over .bundler to the gem directory" do
+      spec = Gem::Specification.find_by_name("appbundler-example-app", "= 1.0.0")
+      gem_path = spec.gem_dir
+      app.copy_bundler_env
+      expect(File.directory?(File.join(gem_path, '.bundle'))).to be(true)
+      expect(File.exists?(File.join(gem_path, '.bundle/config'))).to be(true)
+    end
     context "and the executable is symlinked to a different directory", :not_supported_on_windows do
 
       let(:symlinks_root_dir) do

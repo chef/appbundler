@@ -1,4 +1,5 @@
 require 'bundler'
+require 'fileutils'
 require 'pp'
 
 module Appbundler
@@ -25,9 +26,10 @@ module Appbundler
     # directory.  This will let us run tests from under that directory.
     def copy_bundler_env
       gem_path = app_gemspec.gem_dir
-      FileUtils.cp(gemfile_lock, gem_path)
+      FileUtils.install(gemfile_lock, gem_path, :mode => 0644)
       if File.exist?(dot_bundle_dir) && File.directory?(dot_bundle_dir)
         FileUtils.cp_r(dot_bundle_dir, gem_path)
+        FileUtils.chmod_R("ugo+rX", File.join(gem_path, ".bundle"))
       end
     end
 
