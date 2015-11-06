@@ -24,6 +24,10 @@ BANNER
       :proc => lambda {|v| $stdout.puts("Appbundler Version: #{::Appbundler::VERSION}")},
       :exit => 0
 
+    option :name,
+      :long => '--name NAME',
+      :description => 'name of gem to appbundle'
+
     option :help,
       :short => "-h",
       :long => "--help",
@@ -42,7 +46,7 @@ BANNER
 
     attr_reader :argv
 
-    attr_reader :app_path
+    attr_reader :gemfile_lock
     attr_reader :bin_path
 
     def initialize(argv)
@@ -51,27 +55,35 @@ BANNER
     end
 
     def handle_options
-      parse_options(@argv)
+      parse_options(argv)
     end
 
     def validate!
       if cli_arguments.size != 2
         usage_and_exit!
       else
-        @app_path = File.expand_path(cli_arguments[0])
+        app_path_or_lock = File.expand_path(cli_arguments[0])
+        if cli_arguments[0].end_with?(".lock")
+          @gemfile_lock = File.expand_path(cli_arguments[0])
+        else
+          # If you didn't pass a .lock, you must have passed us the app path
+          # under which Gemfile.lock and .bundle exist
+          @gemfile_lock = "#{File.expand_path(cli_arguments[0])}/Gemfile.lock"
+        end
+        config[:name] ||= File.basename(File.dirname(gemfile_lock))
         @bin_path = File.expand_path(cli_arguments[1])
-        verify_app_path
+        verify_gemfile_lock
         verify_bin_path
         verify_gem_installed
       end
     end
 
-    def verify_app_path
-      if !File.directory?(app_path)
-        err("APPLICATION_DIR `#{app_path}' is not a directory or doesn't exist")
+    def verify_gemfile_lock
+      if !File.directory?(File.dirname(gemfile_lock))
+        err("APPLICATION_DIR `#{File.dirname(gemfile_lock)}' is not a directory or doesn't exist")
         usage_and_exit!
-      elsif !File.exist?(File.join(app_path, "Gemfile.lock"))
-        err("APPLICATION_DIR does not contain required Gemfile.lock")
+      elsif !File.exist?(gemfile_lock)
+        err("#{gemfile_lock} does not exist")
         usage_and_exit!
       end
     end
@@ -84,7 +96,7 @@ BANNER
     end
 
     def verify_gem_installed
-      app = App.new(app_path, bin_path)
+      app = App.new(config[:name], gemfile_lock, bin_path)
       app.app_gemspec
     rescue Gem::LoadError
       err("Unable to find #{app.app_spec.name} #{app.app_spec.version} installed as a gem")
@@ -93,7 +105,7 @@ BANNER
     end
 
     def run
-      app = App.new(app_path, bin_path)
+      app = App.new(config[:name], gemfile_lock, bin_path)
       created_stubs = app.write_executable_stubs
       created_stubs.each do |real_executable_path, stub_path|
         $stdout.puts "Generated binstub #{stub_path} => #{real_executable_path}"

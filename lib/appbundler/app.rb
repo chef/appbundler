@@ -7,7 +7,8 @@ module Appbundler
 
     BINSTUB_FILE_VERSION=1
 
-    attr_reader :app_root
+    attr_reader :gemfile_lock
+    attr_reader :name
     attr_reader :target_bin_dir
 
     def self.demo
@@ -17,8 +18,9 @@ module Appbundler
       puts demo.binstub(knife)
     end
 
-    def initialize(app_root, target_bin_dir)
-      @app_root = app_root
+    def initialize(name, gemfile_lock, target_bin_dir)
+      @name = name
+      @gemfile_lock = gemfile_lock
       @target_bin_dir = target_bin_dir
     end
 
@@ -55,16 +57,12 @@ module Appbundler
       executables_to_create
     end
 
-    def name
-      File.basename(app_root)
+    def app_root
+      File.dirname(gemfile_lock)
     end
 
     def dot_bundle_dir
       File.join(app_root, ".bundle")
-    end
-
-    def gemfile_lock
-      File.join(app_root, "Gemfile.lock")
     end
 
     def ruby
