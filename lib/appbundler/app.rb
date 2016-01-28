@@ -178,6 +178,8 @@ E
     def add_dependencies_from(spec, collected_deps=[])
       spec.dependencies.each do |dep|
         next if collected_deps.any? {|s| s.name == dep.name }
+        # a bunlder dep will not get pinned in Gemfile.lock
+        next if dep.name == "bundler"
         next_spec = spec_for(dep.name)
         collected_deps << next_spec
         add_dependencies_from(next_spec, collected_deps)
