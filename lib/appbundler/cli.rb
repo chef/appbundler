@@ -7,6 +7,8 @@ module Appbundler
     include Mixlib::CLI
 
     banner(<<-BANNER)
+* appbundler #{VERSION} *
+
 Usage: appbundler APPLICATION_DIR BINSTUB_DIR
 
   APPLICATION_DIR is the root directory to a working copy of your app
@@ -96,6 +98,9 @@ BANNER
     def verify_deps_are_accessible
       app = App.new(app_path, bin_path)
       app.verify_deps_are_accessible!
+    rescue InaccessibleGemsInLockfile => e
+      err(e.message)
+      exit 1
     end
 
     def run
