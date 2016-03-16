@@ -12,7 +12,8 @@ describe Appbundler do
 
   def double_spec(name, version, dep_names)
     deps = dep_names.map {|n| double("Bundler::Dependency #{n}", :name => n.to_s) }
-    spec = double("Bundler::LazySpecification '#{name}'", :name => name.to_s, :version => version, :dependencies => deps)
+    source = double("Bundler::Source::Rubygems")
+    spec = double("Bundler::LazySpecification '#{name}'", :name => name.to_s, :version => version, :dependencies => deps, :source => source)
     all_specs << spec
     spec
   end
@@ -133,6 +134,48 @@ CODE
 "%~dp0\\..\\embedded\\bin\\ruby.exe" "%~dpn0" %*
 E
         expect(app.batchfile_stub).to eq(expected_batch_code)
+      end
+
+    end
+
+    context "when there are git-sourced gems in the Gemfile.lock" do
+
+      let!(:second_level_dep_b_a) do
+        source = double("Bundler::Source::Git")
+        allow(source).to receive(:kind_of?).with(Bundler::Source::Git).and_return(true)
+        spec = double_spec(:second_level_dep_b_a, "2.2.0", [])
+        allow(spec).to receive(:source).and_return(source)
+        spec
+      end
+
+      # Ensure that the behavior we emulate in our stubs is correct:
+      it "sanity checks rubygems behavior" do
+        expect { Gem::Specification.find_by_name("there-is-no-such-gem-named-this", "= 999.999.999") }.
+          to raise_error(Gem::LoadError)
+      end
+
+      context "and the gems are not accessible by rubygems" do
+
+        before do
+          allow(Gem::Specification).to receive(:find_by_name).with("second_level_dep_b_a", "= 2.2.0").and_raise(Gem::LoadError)
+        end
+
+        it "raises an error validating gem accessibility" do
+          expect { app.verify_deps_are_accessible! }.to raise_error(Appbundler::InaccessibleGemsInLockfile)
+        end
+
+      end
+
+      context "and the gems are accessible by rubygems" do
+
+        before do
+          allow(Gem::Specification).to receive(:find_by_name).with("second_level_dep_b_a", "= 2.2.0").and_return(true)
+        end
+
+        it "raises an error validating gem accessibility" do
+          expect { app.verify_deps_are_accessible! }.to_not raise_error
+        end
+
       end
 
     end
@@ -331,6 +374,7 @@ E
     end
 
     it "generates executable stubs for all executables in the app" do
+      app.verify_deps_are_accessible!
       app.write_executable_stubs
       binary_1 = File.join(target_bindir, "app-binary-1")
       binary_2 = File.join(target_bindir, "app-binary-2")

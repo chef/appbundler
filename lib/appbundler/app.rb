@@ -2,20 +2,19 @@ require 'bundler'
 require 'fileutils'
 require 'pp'
 
+
 module Appbundler
+
+  class AppbundlerError < StandardError; end
+
+  class InaccessibleGemsInLockfile < AppbundlerError; end
+
   class App
 
     BINSTUB_FILE_VERSION=1
 
     attr_reader :app_root
     attr_reader :target_bin_dir
-
-    def self.demo
-      demo = new("/Users/ddeleo/oc/chef")
-
-      knife = demo.executables.grep(/knife/).first
-      puts demo.binstub(knife)
-    end
 
     def initialize(app_root, target_bin_dir)
       @app_root = app_root
@@ -118,6 +117,7 @@ E
     end
 
     def runtime_activate
+
       @runtime_activate ||= begin
         statements = runtime_dep_specs.map {|s| %Q|gem "#{s.name}", "= #{s.version}"|}
         activate_code = ""
@@ -173,7 +173,68 @@ E
       @parsed_gemfile_lock ||= Bundler::LockfileParser.new(IO.read(gemfile_lock))
     end
 
+    # Bundler stores gems loaded from git in locations like this:
+    # `lib/ruby/gems/2.1.0/bundler/gems/chef-b5860b44acdd`. Rubygems cannot
+    # find these during normal (non-bundler) operation. This will cause
+    # problems if there is no gem of the same version installed to the "normal"
+    # gem location, because the appbundler executable will end up containing a
+    # statement like `gem "foo", "= x.y.z"` which fails.
+    #
+    # However, if this gem/version has been manually installed (by building and
+    # installing via `gem` commands), then we end up with the correct
+    # appbundler file, even if it happens somewhat by accident.
+    #
+    # Therefore, this method lists all the git-sourced gems in the
+    # Gemfile.lock, then it checks if that version of the gem can be loaded via
+    # `Gem::Specification.find_by_name`. If there are any unloadable gems, then
+    # the InaccessibleGemsInLockfile error is raised.
+    def verify_deps_are_accessible!
+      inaccessable_gems = inaccessable_git_sourced_gems
+      return true if inaccessable_gems.empty?
+
+      message = <<-MESSAGE
+Application '#{name}' contains gems in the lockfile which are
+not accessible by rubygems. This usually occurs when you fetch gems from git in
+your Gemfile and do not install the same version of the gems beforehand.
+
+MESSAGE
+
+      message << "The Gemfile.lock is located here:\n- #{gemfile_lock}\n\n"
+
+      message << "The offending gems are:\n"
+      inaccessable_gems.each do |gemspec|
+        message << "- #{gemspec.name} (#{gemspec.version}) from #{gemspec.source}\n"
+      end
+
+      message << "\n"
+
+      message << "Rubygems is configured to search the following paths:\n"
+      Gem.paths.path.each { |p| message << "- #{p}\n" }
+
+      message << "\n"
+      message << "If these seem wrong, you might need to set GEM_HOME or other environment\nvariables before running appbundler\n"
+
+      raise InaccessibleGemsInLockfile, message
+    end
+
     private
+
+    def git_sourced_gems
+      runtime_dep_specs.select { |i| i.source.kind_of?(Bundler::Source::Git) }
+    end
+
+    def inaccessable_git_sourced_gems
+      git_sourced_gems.reject do |spec|
+        gem_available?(spec)
+      end
+    end
+
+    def gem_available?(spec)
+      Gem::Specification.find_by_name(spec.name, "= #{spec.version}")
+      true
+    rescue Gem::LoadError
+      false
+    end
 
     def add_dependencies_from(spec, collected_deps=[])
       spec.dependencies.each do |dep|

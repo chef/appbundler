@@ -63,6 +63,7 @@ BANNER
         verify_app_path
         verify_bin_path
         verify_gem_installed
+        verify_deps_are_accessible
       end
     end
 
@@ -90,6 +91,11 @@ BANNER
       err("Unable to find #{app.app_spec.name} #{app.app_spec.version} installed as a gem")
       err("You must install the top-level app as a gem before calling app-bundler")
       usage_and_exit!
+    end
+
+    def verify_deps_are_accessible
+      app = App.new(app_path, bin_path)
+      app.verify_deps_are_accessible!
     end
 
     def run
