@@ -13,18 +13,22 @@ module Appbundler
 
     BINSTUB_FILE_VERSION=1
 
-    attr_reader :app_root
+    attr_reader :bundle_path
     attr_reader :target_bin_dir
+    attr_reader :name
 
-    def initialize(app_root, target_bin_dir)
-      @app_root = app_root
+    def initialize(bundle_path, target_bin_dir, name)
+      @bundle_path = bundle_path
       @target_bin_dir = target_bin_dir
+      @name = name
     end
 
     # Copy over any .bundler and Gemfile.lock files to the target gem
     # directory.  This will let us run tests from under that directory.
     def copy_bundler_env
       gem_path = app_gemspec.gem_dir
+      # If we're already using that directory, don't copy (it won't work anyway)
+      return if gem_path == File.dirname(gemfile_lock)
       FileUtils.install(gemfile_lock, gem_path, :mode => 0644)
       if File.exist?(dot_bundle_dir) && File.directory?(dot_bundle_dir)
         FileUtils.cp_r(dot_bundle_dir, gem_path)
@@ -54,16 +58,12 @@ module Appbundler
       executables_to_create
     end
 
-    def name
-      File.basename(app_root)
-    end
-
     def dot_bundle_dir
-      File.join(app_root, ".bundle")
+      File.join(bundle_path, ".bundle")
     end
 
     def gemfile_lock
-      File.join(app_root, "Gemfile.lock")
+      File.join(bundle_path, "Gemfile.lock")
     end
 
     def ruby
