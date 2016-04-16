@@ -114,7 +114,7 @@ CODE
       expected = <<-EOS
 ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"
 require "rubygems"
-::Gem.clear_paths if ::Gem.respond_to?(:clear_paths)
+::Gem.clear_paths
 EOS
 
       expect(app.env_sanitizer).to eq(expected)
@@ -241,7 +241,7 @@ E
                           <<-E
 ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"
 require "rubygems"
-::Gem.clear_paths if ::Gem.respond_to?(:clear_paths)
+::Gem.clear_paths
 
 gem "chef", "= 12.4.1"
 gem "chef-config", "= 12.4.1"
@@ -306,7 +306,7 @@ E
           <<-E
 ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"
 require "rubygems"
-::Gem.clear_paths if ::Gem.respond_to?(:clear_paths)
+::Gem.clear_paths
 
 gem "chef", "= 12.4.1"
 gem "chef-config", "= 12.4.1"

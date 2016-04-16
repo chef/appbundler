@@ -116,7 +116,7 @@ E
       <<-EOS
 ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"
 require "rubygems"
-::Gem.clear_paths if ::Gem.respond_to?(:clear_paths)
+::Gem.clear_paths
 EOS
     end
 
