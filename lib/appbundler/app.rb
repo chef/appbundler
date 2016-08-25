@@ -113,7 +113,12 @@ E
     # APPBUNDLER_ALLOW_RVM environment variable to "true". This feature
     # exists to make tests run correctly on travis.ci (which uses rvm).
     def env_sanitizer
-      %Q{ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"}
+      <<-SANITIZE
+unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"
+  Gem.clear_paths
+  ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil
+end
+SANITIZE
     end
 
     def runtime_activate
