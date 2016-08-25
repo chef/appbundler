@@ -110,8 +110,14 @@ CODE
       expect(app.load_statement_for(bin_path)).to eq(expected_loading_code)
     end
 
-    it "generates code to override GEM_HOME and GEM_PATH (e.g., rvm)" do
-      expected = %Q{ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"}
+    it "generates code to clear paths and override GEM_HOME and GEM_PATH (e.g., rvm)" do
+      expected =       <<-SANITIZE
+unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"
+  Gem.clear_paths
+  ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil
+end
+SANITIZE
+
       expect(app.env_sanitizer).to eq(expected)
       expect(app.runtime_activate).to include(expected)
     end
@@ -234,7 +240,11 @@ E
     it "generates runtime activation code for the app" do
       expected_gem_activates= if windows?
                           <<-E
-ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"
+unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"
+  Gem.clear_paths
+  ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil
+end
+
 gem "chef", "= 12.4.1"
 gem "chef-config", "= 12.4.1"
 gem "mixlib-config", "= 2.2.1"
@@ -296,7 +306,11 @@ gem "windows-pr", "= 1.2.4"
 E
                           else
           <<-E
-ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"
+unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"
+  Gem.clear_paths
+  ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil
+end
+
 gem "chef", "= 12.4.1"
 gem "chef-config", "= 12.4.1"
 gem "mixlib-config", "= 2.2.1"
