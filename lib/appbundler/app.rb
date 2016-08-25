@@ -89,7 +89,7 @@ E
     end
 
     def shebang
-      "#!#{ruby}\n"
+      "#!#{ruby} --disable-gems\n"
     end
 
     # A specially formatted comment that documents the format version of the
@@ -113,7 +113,11 @@ E
     # APPBUNDLER_ALLOW_RVM environment variable to "true". This feature
     # exists to make tests run correctly on travis.ci (which uses rvm).
     def env_sanitizer
-      %Q{ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"}
+      <<-EOS
+ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"
+require "rubygems"
+::Gem.clear_paths
+EOS
     end
 
     def runtime_activate

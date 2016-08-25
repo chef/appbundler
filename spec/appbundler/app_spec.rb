@@ -111,7 +111,12 @@ CODE
     end
 
     it "generates code to override GEM_HOME and GEM_PATH (e.g., rvm)" do
-      expected = %Q{ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"}
+      expected = <<-EOS
+ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"
+require "rubygems"
+::Gem.clear_paths
+EOS
+
       expect(app.env_sanitizer).to eq(expected)
       expect(app.runtime_activate).to include(expected)
     end
@@ -235,6 +240,9 @@ E
       expected_gem_activates= if windows?
                           <<-E
 ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"
+require "rubygems"
+::Gem.clear_paths
+
 gem "chef", "= 12.4.1"
 gem "chef-config", "= 12.4.1"
 gem "mixlib-config", "= 2.2.1"
@@ -297,6 +305,9 @@ E
                           else
           <<-E
 ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"
+require "rubygems"
+::Gem.clear_paths
+
 gem "chef", "= 12.4.1"
 gem "chef-config", "= 12.4.1"
 gem "mixlib-config", "= 2.2.1"
