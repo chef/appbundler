@@ -1,6 +1,6 @@
-require 'appbundler/version'
-require 'appbundler/app'
-require 'mixlib/cli'
+require "appbundler/version"
+require "appbundler/app"
+require "mixlib/cli"
 
 module Appbundler
   class CLI
@@ -21,11 +21,11 @@ will point to the gem, not your working copy.
 BANNER
 
     option :version,
-      :short => '-v',
-      :long => '--version',
-      :description => 'Show appbundler version',
+      :short => "-v",
+      :long => "--version",
+      :description => "Show appbundler version",
       :boolean => true,
-      :proc => lambda {|v| $stdout.puts("Appbundler Version: #{::Appbundler::VERSION}")},
+      :proc => lambda { |v| $stdout.puts("Appbundler Version: #{::Appbundler::VERSION}") },
       :exit => 0
 
     option :help,

@@ -1,8 +1,8 @@
-require 'spec_helper'
-require 'tmpdir'
-require 'fileutils'
-require 'mixlib/shellout'
-require 'appbundler/app'
+require "spec_helper"
+require "tmpdir"
+require "fileutils"
+require "mixlib/shellout"
+require "appbundler/app"
 
 describe Appbundler do
 
@@ -11,7 +11,7 @@ describe Appbundler do
   end
 
   def double_spec(name, version, dep_names)
-    deps = dep_names.map {|n| double("Bundler::Dependency #{n}", :name => n.to_s) }
+    deps = dep_names.map { |n| double("Bundler::Dependency #{n}", :name => n.to_s) }
     source = double("Bundler::Source::Rubygems")
     spec = double("Bundler::LazySpecification '#{name}'", :name => name.to_s, :version => version, :dependencies => deps, :source => source)
     all_specs << spec
@@ -19,7 +19,7 @@ describe Appbundler do
   end
 
   def shellout!(cmd)
-    s = Mixlib::ShellOut.new(cmd, :env => {"RUBYOPT" => nil, "BUNDLE_GEMFILE" => nil,  "APPBUNDLER_ALLOW_RVM" => "true"})
+    s = Mixlib::ShellOut.new(cmd, :env => { "RUBYOPT" => nil, "BUNDLE_GEMFILE" => nil, "APPBUNDLER_ALLOW_RVM" => "true" })
     s.run_command
     s.error!
     s
@@ -83,7 +83,7 @@ describe Appbundler do
       expect(app.runtime_dep_specs).to include(second_level_dep_a_a)
       expect(app.runtime_dep_specs).to include(second_level_dep_b_a)
       expect(app.runtime_dep_specs).to include(second_level_dep_shared)
-      expect(app.runtime_dep_specs.select {|s| s == second_level_dep_shared}.size).to eq(1)
+      expect(app.runtime_dep_specs.select { |s| s == second_level_dep_shared }.size).to eq(1)
     end
 
     it "generates gem activation code for the app" do
@@ -134,7 +134,7 @@ EOS
       end
 
       it "generates batchfile stub code" do
-        expected_batch_code=<<-E
+        expected_batch_code = <<-E
 @ECHO OFF
 "%~dp0\\..\\embedded\\bin\\ruby.exe" "%~dpn0" %*
 E
@@ -188,7 +188,7 @@ E
   end
 
   context "when created with the example application" do
-    FIXTURES_PATH =  File.expand_path("../../fixtures/", __FILE__).freeze
+    FIXTURES_PATH = File.expand_path("../../fixtures/", __FILE__).freeze
 
     APP_ROOT = File.join(FIXTURES_PATH, "appbundler-example-app").freeze
 
@@ -237,8 +237,8 @@ E
     end
 
     it "generates runtime activation code for the app" do
-      expected_gem_activates= if windows?
-                          <<-E
+      expected_gem_activates = if windows?
+                                 <<-E
 ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"
 require "rubygems"
 ::Gem.clear_paths
@@ -302,8 +302,8 @@ gem "win32-service", "= 0.8.6"
 gem "windows-api", "= 0.4.4"
 gem "windows-pr", "= 1.2.4"
 E
-                          else
-          <<-E
+                               else
+                                 <<-E
 ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"
 require "rubygems"
 ::Gem.clear_paths
@@ -355,13 +355,13 @@ gem "net-telnet", "= 0.1.1"
 gem "sfl", "= 2.2"
 gem "syslog-logger", "= 1.6.8"
 E
-                            end
+                               end
       expect(app.runtime_activate).to include(expected_gem_activates)
     end
 
     it "lists the app's executables" do
       spec = Gem::Specification.find_by_name("appbundler-example-app", "= 1.0.0")
-      expected_executables = %w[app-binary-1 app-binary-2].map do |basename|
+      expected_executables = %w{app-binary-1 app-binary-2}.map do |basename|
         File.join(spec.gem_dir, "/bin", basename)
       end
       expect(app.executables).to match_array(expected_executables)
@@ -379,7 +379,7 @@ E
 
       load_binary = executable_content.lines.to_a.last
 
-      expected_load_path = %Q[Kernel.load(bin_file)\n]
+      expected_load_path = %Q{Kernel.load(bin_file)\n}
 
       expect(load_binary).to eq(expected_load_path)
     end
@@ -401,15 +401,15 @@ E
       spec = Gem::Specification.find_by_name("appbundler-example-app", "= 1.0.0")
       gem_path = spec.gem_dir
       app.copy_bundler_env
-      expect(File.exists?(File.join(gem_path, 'Gemfile.lock'))).to be(true)
+      expect(File.exists?(File.join(gem_path, "Gemfile.lock"))).to be(true)
     end
 
     it "copies over .bundler to the gem directory" do
       spec = Gem::Specification.find_by_name("appbundler-example-app", "= 1.0.0")
       gem_path = spec.gem_dir
       app.copy_bundler_env
-      expect(File.directory?(File.join(gem_path, '.bundle'))).to be(true)
-      expect(File.exists?(File.join(gem_path, '.bundle/config'))).to be(true)
+      expect(File.directory?(File.join(gem_path, ".bundle"))).to be(true)
+      expect(File.exists?(File.join(gem_path, ".bundle/config"))).to be(true)
     end
     context "and the executable is symlinked to a different directory", :not_supported_on_windows do
 
@@ -445,7 +445,7 @@ E
     context "on windows" do
 
       let(:expected_ruby_relpath) do
-        app.ruby_relative_path.gsub('/', '\\')
+        app.ruby_relative_path.tr("/", '\\')
       end
 
       let(:expected_batch_code) do
