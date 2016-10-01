@@ -1,5 +1,7 @@
 # Appbundler
 
+[![Build Status Master](https://travis-ci.org/chef/appbundler.svg?branch=master)](https://travis-ci.org/chef/appbundler) [![Gem Version](https://badge.fury.io/rb/appbundler.svg)](https://badge.fury.io/rb/appbundler)
+
 Appbundler reads a Gemfile.lock and generates code with `gem "some-dep", "= VERSION"` statements to lock the app's dependencies to the versions selected by bundler. This code is used in binstubs for the application so that running (e.g.) `chef-client` on the command line activates the locked dependencies for `chef` before running the command.
 
 This provides the following benefits:
