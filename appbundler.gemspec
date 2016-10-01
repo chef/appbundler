@@ -6,12 +6,12 @@ require 'appbundler/version'
 Gem::Specification.new do |spec|
   spec.name          = "appbundler"
   spec.version       = Appbundler::VERSION
-  spec.authors       = ["danielsdeleo"]
-  spec.email         = ["dan@opscode.com"]
+  spec.authors       = ["Dan DeLeo"]
+  spec.email         = ["dan@chef.io"]
   spec.description   = %q{Extracts a dependency solution from bundler's Gemfile.lock to speed gem activation}
   spec.summary       = spec.description
-  spec.homepage      = ""
-  spec.license       = "Apache2"
+  spec.homepage      = "https://github.com/chef/appbundler"
+  spec.license       = "Apache-2.0"
 
   spec.files         = `git ls-files`.split($/)
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
