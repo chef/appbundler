@@ -1,4 +1,3 @@
 
 module Appbundler
 end
-

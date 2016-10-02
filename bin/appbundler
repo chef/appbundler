@@ -3,11 +3,10 @@
 Kernel.trap(:INT) { exit 1 }
 
 begin
-  require 'appbundler/cli'
+  require "appbundler/cli"
 rescue LoadError
   $:.unshift File.expand_path("../../lib", __FILE__)
-  require 'appbundler/cli'
+  require "appbundler/cli"
 end
 
 Appbundler::CLI.run(ARGV)
-

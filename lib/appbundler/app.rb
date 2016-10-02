@@ -1,7 +1,6 @@
-require 'bundler'
-require 'fileutils'
-require 'pp'
-
+require "bundler"
+require "fileutils"
+require "pp"
 
 module Appbundler
 
@@ -11,7 +10,7 @@ module Appbundler
 
   class App
 
-    BINSTUB_FILE_VERSION=1
+    BINSTUB_FILE_VERSION = 1
 
     attr_reader :bundle_path
     attr_reader :target_bin_dir
@@ -71,7 +70,7 @@ module Appbundler
     end
 
     def batchfile_stub
-      ruby_relpath_windows = ruby_relative_path.gsub('/', '\\')
+      ruby_relpath_windows = ruby_relative_path.tr("/", '\\')
       <<-E
 @ECHO OFF
 "%~dp0\\#{ruby_relpath_windows}" "%~dpn0" %*
@@ -121,9 +120,8 @@ EOS
     end
 
     def runtime_activate
-
       @runtime_activate ||= begin
-        statements = runtime_dep_specs.map {|s| %Q|gem "#{s.name}", "= #{s.version}"|}
+        statements = runtime_dep_specs.map { |s| %Q{gem "#{s.name}", "= #{s.version}"} }
         activate_code = ""
         activate_code << env_sanitizer << "\n"
         activate_code << statements.join("\n") << "\n"
@@ -150,7 +148,7 @@ E
 
     def executables
       spec = app_gemspec
-      spec.executables.map {|e| spec.bin_file(e)}
+      spec.executables.map { |e| spec.bin_file(e) }
     end
 
     def runtime_dep_specs
@@ -240,9 +238,9 @@ MESSAGE
       false
     end
 
-    def add_dependencies_from(spec, collected_deps=[])
+    def add_dependencies_from(spec, collected_deps = [])
       spec.dependencies.each do |dep|
-        next if collected_deps.any? {|s| s.name == dep.name }
+        next if collected_deps.any? { |s| s.name == dep.name }
         # a bundler dep will not get pinned in Gemfile.lock
         next if dep.name == "bundler"
         next_spec = spec_for(dep.name)
@@ -253,7 +251,7 @@ MESSAGE
     end
 
     def spec_for(dep_name)
-      gemfile_lock_specs.find {|s| s.name == dep_name } or raise "No spec #{dep_name}"
+      gemfile_lock_specs.find { |s| s.name == dep_name } || raise("No spec #{dep_name}")
     end
   end
 end

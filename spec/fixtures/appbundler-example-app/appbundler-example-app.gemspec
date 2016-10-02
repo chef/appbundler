@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.homepage      = ""
   spec.license       = "Apache2"
 
-  spec.files         = Dir.glob("{bin,lib,spec}/**/*").reject {|f| File.directory?(f) }
+  spec.files         = Dir.glob("{bin,lib,spec}/**/*").reject { |f| File.directory?(f) }
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
@@ -19,4 +19,3 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rake"
   spec.add_development_dependency "pry"
 end
-
