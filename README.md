@@ -18,7 +18,7 @@ This provides the following benefits:
 Install via rubygems: `gem install appbundler` or clone this project and bundle install:
 
 ```shell
-git clone https://github.com/opscode/appbundler.git
+git clone https://github.com/chef/appbundler.git
 cd appbundler
 bundle install
 ```
@@ -28,7 +28,7 @@ Clone whatever project you want to appbundle somewhere else, and bundle install 
 ```shell
 mkdir ~/oc
 cd ~/oc
-git clone https://github.com/opscode/chef.git
+git clone https://github.com/chef/chef.git
 cd chef
 bundle install
 ```
