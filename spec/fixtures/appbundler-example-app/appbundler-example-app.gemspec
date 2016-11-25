@@ -4,7 +4,7 @@ Gem::Specification.new do |spec|
   spec.name          = "appbundler-example-app"
   spec.version       = "1.0.0"
   spec.authors       = ["danielsdeleo"]
-  spec.email         = ["dan@opscode.com"]
+  spec.email         = ["dan@chef.io"]
   spec.description   = %q{test fixture app}
   spec.summary       = spec.description
   spec.homepage      = ""
