@@ -129,8 +129,19 @@ EOS
       end
     end
 
+    # Apply some default tuning to the ruby GC, there is a memory-speed tradoff here and
+    # we allow users to override these settings.
+    def gc_tuning
+      <<-EOM
+      ENV["RUBY_GC_HEAP_GROWTH_FACTOR"] ||= "1.2"
+      ENV["RUBY_GC_MALLOC_LIMIT_GROWTH_FACTOR"] ||= "1.2"
+      ENV["RUBY_GC_OLDMALLOC_LIMIT_GROWTH_FACTOR"] ||= "1.2"
+      ENV["RUBY_GC_HEAP_OLDOBJECT_LIMIT_FACTOR"] ||= "1.2"
+      EOM
+    end
+
     def binstub(bin_file)
-      shebang + file_format_comment + runtime_activate + load_statement_for(bin_file)
+      shebang + file_format_comment + gc_tuning + runtime_activate + load_statement_for(bin_file)
     end
 
     def load_statement_for(bin_file)
