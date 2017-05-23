@@ -123,7 +123,8 @@ BANNER
         created_stubs.each do |real_executable_path, stub_path|
           $stdout.puts "Generated binstub #{stub_path} => #{real_executable_path}"
         end
-        app.copy_bundler_env
+        created_lockfile = app.write_merged_lockfiles
+        $stdout.puts "Generated merged lockfile at #{created_lockfile}" if created_lockfile
       end
     end
 
