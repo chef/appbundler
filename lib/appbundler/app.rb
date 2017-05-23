@@ -22,51 +22,75 @@ module Appbundler
       @name = name
     end
 
+    def gemfile_path
+      "#{app_dir}/Gemfile"
+    end
+
+    def parsed_gemfile
+      @parsed_gemfile ||=
+        begin
+          parsed_gemfile = Bundler::Dsl.new
+          parsed_gemfile.eval_gemfile(gemfile_path)
+          parsed_gemfile
+        end
+    end
+
+    def safe_resolve_local_gem(s)
+      Gem::Specification.find_by_name(s.name, s.version)
+    rescue Gem::MissingSpecError
+      nil
+    end
+
+    def requirement_to_str(req)
+      req.as_list.map { |r| "\"#{r}\"" }.join(", ")
+    end
+
     def write_merged_lockfiles
-      # we assume we're running against a Gemfile.lock in <...>/lib/ruby/gems/2.4.0/gems/whatever-1.2.4/Gemfile.lock
+      # just return we don't have an external lockfile
       return if app_dir == File.dirname(gemfile_lock)
 
-      # if we're not then we take the external lockfile (which is assumed to be a mega-runtime-lockfile like the
-      # chef-dk Gemfile.lock) and we generate a new lockfile with all the constraints from the mega-lockfile, plus
-      # the Gemfile and all its dev and non-runtime deps.  this is necessary to keep the dev deps of test-kitchen
-      # and everything else that litters chef-dk out of the runtime bundle (the diamond dependency issue between
-      # chef-dk and every dep is has an something like rake is literally fucking insane so the ultra-mega Gemfile.lock
-      # around chef-dk and all its deps and all the dev deps of those deps is not gonna work).  we need all those
-      # dev deps but we need to allow them to conflict.  so we expect we will ship multiple versions of e.g. rake.
+      # handle external lockfile
       Tempfile.open(".appbundler-gemfile", app_dir) do |t|
-        t.puts %Q{eval_gemfile "#{app_dir}/Gemfile"}
+        t.puts "source 'https://rubygems.org'"
+
+        locked_gems = {}
+
         gemfile_lock_specs.each do |s|
-          next if s.name == app_spec.name
-          begin
-            spec = Gem::Specification.find_by_name(s.name, s.version)
-          rescue Gem::MissingSpecError
-            # skips gems that aren't for our platform since they weren't installed
-            next
-          end
+#          next if s.name == app_spec.name
+
+          # we use the fact that all the gems from the Gemfile.lock have been preinstalled to skip gems that aren't for our platform.
+          spec = safe_resolve_local_gem(s)
+          next if spec.nil?
+
           case s.source
           when Bundler::Source::Path
-            t.puts %Q{gem "#{spec.name}", path: "#{spec.gem_dir}"}
+            locked_gems[spec.name] = %Q{gem "#{spec.name}", path: "#{spec.gem_dir}"}
           when Bundler::Source::Rubygems
-            t.puts %Q{gem "#{spec.name}", "= #{spec.version}"}
+            # FIXME: should add the spec.version as a gem requirement below
+            locked_gems[spec.name] = %Q{gem "#{spec.name}", "= #{spec.version}"}
           when Bundler::Source::Git
             raise "fixme"
           else
             raise "dunno"
           end
-          #platform = Bundler::Dependency::REVERSE_PLATFORM_MAP[spec.platform]
-          #platform ||= [ :mingw , :x64_mingw ]  # XXX: "universal-mingw32" is not supported in the reverse map and it returns nil
-          #if Dir.glob("#{spec.gem_dir}/*.gemspec").empty?
-            #t.puts %Q{gem "#{spec.name}", "= #{spec.version}", platforms: #{platform}}
-          #else
-          #  t.puts %Q{gem "#{spec.name}", path: "#{spec.gem_dir}", platforms: #{platform}}
-          #end
         end
+
+        require 'pp'
+        pp parsed_gemfile
+
+        parsed_gemfile.dependencies.each do |dep|
+          if locked_gems[dep.name]
+            t.puts locked_gems[dep.name]
+          else
+            t.puts %Q{gem "#{dep.name}", #{requirement_to_str(dep.requirement)}, platform: #{dep.platforms}}
+          end
+        end
+
         t.close
+        puts IO.read(t.path)
         Dir.chdir(app_dir) do
           FileUtils.rm_f "#{app_dir}/Gemfile.lock"
           Bundler.with_clean_env do
-            # this generates piles of "duplicated gems" and "unused platform" warnings, which are ignorable.
-            # we could perhaps prune the "unused platform" warnings, but they should be harmless.
             so = Mixlib::ShellOut.new("bundle install --path vendor/bundle", env: { "BUNDLE_GEMFILE" => t.path })
             so.run_command
             so.error!
