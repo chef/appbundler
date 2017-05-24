@@ -47,6 +47,10 @@ module Appbundler
       ret
     end
 
+    SHITLIST = [
+      "github_changelog_generator",
+    ]
+
     def write_merged_lockfiles(without: [])
       # just return we don't have an external lockfile
       return if app_dir == File.dirname(gemfile_lock)
@@ -58,6 +62,7 @@ module Appbundler
         locked_gems = {}
 
         gemfile_lock_specs.each do |s|
+          next if SHITLIST.include?(s.name)
           # we use the fact that all the gems from the Gemfile.lock have been preinstalled to skip gems that aren't for our platform.
           spec = safe_resolve_local_gem(s)
           next if spec.nil?
@@ -80,6 +85,7 @@ module Appbundler
         t.puts "# GEMS FROM GEMFILE:"
 
         requested_dependencies(without).each do |dep|
+          next if SHITLIST.include?(dep.name)
           if locked_gems[dep.name]
             t.puts locked_gems[dep.name]
           else
@@ -93,6 +99,7 @@ module Appbundler
         t.puts "# GEMS FROM LOCKFILE: "
 
         locked_gems.each do |name, line|
+          next if SHITLIST.include?(name)
           next if seen_gems[name]
           t.puts line
         end
