@@ -1,6 +1,8 @@
 require "bundler"
 require "fileutils"
 require "mixlib/shellout"
+require "tempfile"
+require "pp"
 
 module Appbundler
 
@@ -26,15 +28,6 @@ module Appbundler
       "#{app_dir}/Gemfile"
     end
 
-    def parsed_gemfile
-      @parsed_gemfile ||=
-        begin
-          parsed_gemfile = Bundler::Dsl.new
-          parsed_gemfile.eval_gemfile(gemfile_path)
-          parsed_gemfile
-        end
-    end
-
     def safe_resolve_local_gem(s)
       Gem::Specification.find_by_name(s.name, s.version)
     rescue Gem::MissingSpecError
@@ -45,15 +38,16 @@ module Appbundler
       req.as_list.map { |r| "\"#{r}\"" }.join(", ")
     end
 
-    def definition
-      @definition ||= Bundler::Definition.build(gemfile_path, gemfile_lock, nil)
+    def requested_dependencies(without)
+      temp = Bundler.settings.without
+      Bundler.settings.without = without
+      definition = Bundler::Definition.build(gemfile_path, gemfile_lock, nil)
+      ret = definition.send(:requested_dependencies)
+      Bundler.settings.without = temp
+      ret
     end
 
-    def requested_dependencies
-      definition.send(:requested_dependencies)
-    end
-
-    def write_merged_lockfiles
+    def write_merged_lockfiles(without: [])
       # just return we don't have an external lockfile
       return if app_dir == File.dirname(gemfile_lock)
 
@@ -64,8 +58,6 @@ module Appbundler
         locked_gems = {}
 
         gemfile_lock_specs.each do |s|
-#          next if s.name == app_spec.name
-
           # we use the fact that all the gems from the Gemfile.lock have been preinstalled to skip gems that aren't for our platform.
           spec = safe_resolve_local_gem(s)
           next if spec.nil?
@@ -83,7 +75,11 @@ module Appbundler
           end
         end
 
-        requested_dependencies.each do |dep|
+        seen_gems = {}
+
+        t.puts "# GEMS FROM GEMFILE:"
+
+        requested_dependencies(without).each do |dep|
           if locked_gems[dep.name]
             t.puts locked_gems[dep.name]
           else
@@ -91,6 +87,14 @@ module Appbundler
             string << %Q{, platform: #{dep.platforms}} unless dep.platforms.empty?
             t.puts string
           end
+          seen_gems[dep.name] = true
+        end
+
+        t.puts "# GEMS FROM LOCKFILE: "
+
+        locked_gems.each do |name, line|
+          next if seen_gems[name]
+          t.puts line
         end
 
         t.close

@@ -20,6 +20,13 @@ Your bundled application must already be gem installed.  Generated binstubs
 will point to the gem, not your working copy.
 BANNER
 
+    # this is used by chef-dk, its probably not an external API, here be dragons
+    option :without,
+      :long => "--without GROUPS",
+      :description => "Comma separated list of groups to exclude when building transitive Gemfile.locks (internal API)",
+      :proc => lambda { |o| o.split(/[\s,]+/) },
+      :default => []
+
     option :version,
       :short => "-v",
       :long => "--version",
@@ -123,7 +130,7 @@ BANNER
         created_stubs.each do |real_executable_path, stub_path|
           $stdout.puts "Generated binstub #{stub_path} => #{real_executable_path}"
         end
-        created_lockfile = app.write_merged_lockfiles
+        created_lockfile = app.write_merged_lockfiles(without: config[:without])
         $stdout.puts "Generated merged lockfile at #{created_lockfile}" if created_lockfile
       end
     end
