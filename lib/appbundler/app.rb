@@ -112,11 +112,10 @@ module Appbundler
         Dir.chdir(app_dir) do
           FileUtils.rm_f "#{app_dir}/Gemfile.lock"
           Bundler.with_clean_env do
-            so = Mixlib::ShellOut.new("bundle install --path vendor/bundle", env: { "BUNDLE_GEMFILE" => t.path })
+            so = Mixlib::ShellOut.new("bundle lock", env: { "BUNDLE_GEMFILE" => t.path })
             so.run_command
             so.error!
           end
-          FileUtils.rm_rf "vendor/bundle"
         end
       end
       return "#{app_dir}/Gemfile.lock"
