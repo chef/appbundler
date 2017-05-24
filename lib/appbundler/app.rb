@@ -47,6 +47,9 @@ module Appbundler
       ret
     end
 
+    # This is a blatant ChefDK 2.0 hack.  We need to audit all of our Gemfiles, make sure
+    # that github_changelog_generator is in its own group and exclude that group from all
+    # of our appbundle calls.  But to ship ChefDK 2.0 we just do this.
     SHITLIST = [
       "github_changelog_generator",
     ]
