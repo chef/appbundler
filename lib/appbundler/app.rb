@@ -45,6 +45,14 @@ module Appbundler
       req.as_list.map { |r| "\"#{r}\"" }.join(", ")
     end
 
+    def definition
+      @definition ||= Bundler::Definition.build(gemfile_path, gemfile_lock, nil)
+    end
+
+    def requested_dependencies
+      definition.send(:requested_dependencies)
+    end
+
     def write_merged_lockfiles
       # just return we don't have an external lockfile
       return if app_dir == File.dirname(gemfile_lock)
@@ -75,14 +83,13 @@ module Appbundler
           end
         end
 
-        require 'pp'
-        pp parsed_gemfile
-
-        parsed_gemfile.dependencies.each do |dep|
+        requested_dependencies.each do |dep|
           if locked_gems[dep.name]
             t.puts locked_gems[dep.name]
           else
-            t.puts %Q{gem "#{dep.name}", #{requirement_to_str(dep.requirement)}, platform: #{dep.platforms}}
+            string = %Q{gem "#{dep.name}", #{requirement_to_str(dep.requirement)}}
+            string << %Q{, platform: #{dep.platforms}} unless dep.platforms.empty?
+            t.puts string
           end
         end
 
