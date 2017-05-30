@@ -54,9 +54,23 @@ module Appbundler
       "github_changelog_generator",
     ]
 
+    def external_lockfile?
+      app_dir != File.dirname(gemfile_lock)
+    end
+
+    def local_gemfile_lock_specs
+      gemfile_lock_specs.map do |s|
+        #if SHITLIST.include?(s.name)
+        #  nil
+        #else
+          safe_resolve_local_gem(s)
+        #end
+      end.compact
+    end
+
     def write_merged_lockfiles(without: [])
       # just return we don't have an external lockfile
-      return if app_dir == File.dirname(gemfile_lock)
+      return unless external_lockfile?
 
       # handle external lockfile
       Tempfile.open(".appbundler-gemfile", app_dir) do |t|
@@ -65,8 +79,7 @@ module Appbundler
         locked_gems = {}
 
         gemfile_lock_specs.each do |s|
-          next if SHITLIST.include?(s.name)
-          # we use the fact that all the gems from the Gemfile.lock have been preinstalled to skip gems that aren't for our platform.
+          #next if SHITLIST.include?(s.name)
           spec = safe_resolve_local_gem(s)
           next if spec.nil?
 
@@ -77,9 +90,9 @@ module Appbundler
             # FIXME: should add the spec.version as a gem requirement below
             locked_gems[spec.name] = %Q{gem "#{spec.name}", "= #{spec.version}"}
           when Bundler::Source::Git
-            raise "fixme"
+            raise "FIXME: appbundler needs a patch to support Git gems"
           else
-            raise "dunno"
+            raise "appbundler doens't know this source type"
           end
         end
 
@@ -108,7 +121,7 @@ module Appbundler
         end
 
         t.close
-        puts IO.read(t.path)
+        puts IO.read(t.path)  # debugging
         Dir.chdir(app_dir) do
           FileUtils.rm_f "#{app_dir}/Gemfile.lock"
           Bundler.with_clean_env do
@@ -238,7 +251,11 @@ E
     end
 
     def runtime_dep_specs
-      add_dependencies_from(app_spec)
+      if external_lockfile?
+        local_gemfile_lock_specs
+      else
+        add_dependencies_from(app_spec)
+      end
     end
 
     def app_dependency_names
