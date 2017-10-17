@@ -113,7 +113,10 @@ E
     # exists to make tests run correctly on travis.ci (which uses rvm).
     def env_sanitizer
       <<-EOS
-ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"
+unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"
+  ENV["GEM_HOME"] = nil
+  ENV["GEM_PATH"] = ''
+end
 require "rubygems"
 ::Gem.clear_paths
 EOS

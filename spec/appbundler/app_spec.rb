@@ -112,7 +112,10 @@ CODE
 
     it "generates code to override GEM_HOME and GEM_PATH (e.g., rvm)" do
       expected = <<-EOS
-ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"
+unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"
+  ENV["GEM_HOME"] = nil
+  ENV["GEM_PATH"] = ''
+end
 require "rubygems"
 ::Gem.clear_paths
 EOS
@@ -239,7 +242,10 @@ E
     it "generates runtime activation code for the app" do
       expected_gem_activates = if windows?
                                  <<-E
-ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"
+unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"
+  ENV["GEM_HOME"] = nil
+  ENV["GEM_PATH"] = ''
+end
 require "rubygems"
 ::Gem.clear_paths
 
@@ -304,7 +310,10 @@ gem "windows-pr", "= 1.2.4"
 E
                                else
                                  <<-E
-ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"
+unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"
+  ENV["GEM_HOME"] = nil
+  ENV["GEM_PATH"] = ''
+end
 require "rubygems"
 ::Gem.clear_paths
 
