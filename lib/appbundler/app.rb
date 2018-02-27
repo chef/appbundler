@@ -39,12 +39,10 @@ module Appbundler
     end
 
     def requested_dependencies(without)
-      temp = Bundler.settings.without
-      Bundler.settings.without = without
-      definition = Bundler::Definition.build(gemfile_path, gemfile_lock, nil)
-      ret = definition.send(:requested_dependencies)
-      Bundler.settings.without = temp
-      ret
+      Bundler.settings.temporary(without: without) do
+        definition = Bundler::Definition.build(gemfile_path, gemfile_lock, nil)
+        definition.send(:requested_dependencies)
+      end
     end
 
     # This is a blatant ChefDK 2.0 hack.  We need to audit all of our Gemfiles, make sure
