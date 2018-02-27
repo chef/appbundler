@@ -39,11 +39,20 @@ module Appbundler
     end
 
     def requested_dependencies(without)
-      temp = Bundler.settings.without
-      Bundler.settings.without = without
-      definition = Bundler::Definition.build(gemfile_path, gemfile_lock, nil)
-      ret = definition.send(:requested_dependencies)
-      Bundler.settings.without = temp
+      # 1.15 has a without method, 1.16 does not
+      if Bundler.settings.respond_to?(:without)
+        temp = Bundler.settings.without
+        Bundler.settings.without = without
+        definition = Bundler::Definition.build(gemfile_path, gemfile_lock, nil)
+        ret = definition.send(:requested_dependencies)
+        Bundler.settings.without = temp
+      else
+        temp = Bundler.settings[:without]
+        Bundler.settings[:without] = without
+        definition = Bundler::Definition.build(gemfile_path, gemfile_lock, nil)
+        ret = definition.send(:requested_dependencies)
+        Bundler.settings[:without] = temp
+      end
       ret
     end
 
