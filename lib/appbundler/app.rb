@@ -39,21 +39,10 @@ module Appbundler
     end
 
     def requested_dependencies(without)
-      # 1.15 has a without method, 1.16 does not
-      if Bundler.settings.respond_to?(:without)
-        temp = Bundler.settings.without
-        Bundler.settings.without = without
+      Bundler.settings.temporary(without: without) do
         definition = Bundler::Definition.build(gemfile_path, gemfile_lock, nil)
-        ret = definition.send(:requested_dependencies)
-        Bundler.settings.without = temp
-      else
-        temp = Bundler.settings[:without]
-        Bundler.settings[:without] = without
-        definition = Bundler::Definition.build(gemfile_path, gemfile_lock, nil)
-        ret = definition.send(:requested_dependencies)
-        Bundler.settings[:without] = temp
+        definition.send(:requested_dependencies)
       end
-      ret
     end
 
     # This is a blatant ChefDK 2.0 hack.  We need to audit all of our Gemfiles, make sure
