@@ -1,5 +1,7 @@
 require "bundler"
 require "fileutils"
+require "mixlib/shellout"
+require "tempfile"
 require "pp"
 
 module Appbundler
@@ -22,17 +24,112 @@ module Appbundler
       @name = name
     end
 
-    # Copy over any .bundler and Gemfile.lock files to the target gem
-    # directory.  This will let us run tests from under that directory.
-    def copy_bundler_env
-      gem_path = app_gemspec.gem_dir
-      # If we're already using that directory, don't copy (it won't work anyway)
-      return if gem_path == File.dirname(gemfile_lock)
-      FileUtils.install(gemfile_lock, gem_path, :mode => 0644)
-      if File.exist?(dot_bundle_dir) && File.directory?(dot_bundle_dir)
-        FileUtils.cp_r(dot_bundle_dir, gem_path)
-        FileUtils.chmod_R("ugo+rX", File.join(gem_path, ".bundle"))
+    def gemfile_path
+      "#{app_dir}/Gemfile"
+    end
+
+    def safe_resolve_local_gem(s)
+      Gem::Specification.find_by_name(s.name, s.version)
+    rescue Gem::MissingSpecError
+      nil
+    end
+
+    def requirement_to_str(req)
+      req.as_list.map { |r| "\"#{r}\"" }.join(", ")
+    end
+
+    def requested_dependencies(without)
+      Bundler.settings.temporary(without: without) do
+        definition = Bundler::Definition.build(gemfile_path, gemfile_lock, nil)
+        definition.send(:requested_dependencies)
       end
+    end
+
+    # This is a blatant ChefDK 2.0 hack.  We need to audit all of our Gemfiles, make sure
+    # that github_changelog_generator is in its own group and exclude that group from all
+    # of our appbundle calls.  But to ship ChefDK 2.0 we just do this.
+    SHITLIST = [
+      "github_changelog_generator",
+    ]
+
+    def external_lockfile?
+      app_dir != File.dirname(gemfile_lock)
+    end
+
+    def local_gemfile_lock_specs
+      gemfile_lock_specs.map do |s|
+        #if SHITLIST.include?(s.name)
+        #  nil
+        #else
+          safe_resolve_local_gem(s)
+        #end
+      end.compact
+    end
+
+    def write_merged_lockfiles(without: [])
+      # just return we don't have an external lockfile
+      return unless external_lockfile?
+
+      # handle external lockfile
+      Tempfile.open(".appbundler-gemfile", app_dir) do |t|
+        t.puts "source 'https://rubygems.org'"
+
+        locked_gems = {}
+
+        gemfile_lock_specs.each do |s|
+          #next if SHITLIST.include?(s.name)
+          spec = safe_resolve_local_gem(s)
+          next if spec.nil?
+
+          case s.source
+          when Bundler::Source::Path
+            locked_gems[spec.name] = %Q{gem "#{spec.name}", path: "#{spec.gem_dir}"}
+          when Bundler::Source::Rubygems
+            # FIXME: should add the spec.version as a gem requirement below
+            locked_gems[spec.name] = %Q{gem "#{spec.name}", "= #{spec.version}"}
+          when Bundler::Source::Git
+            raise "FIXME: appbundler needs a patch to support Git gems"
+          else
+            raise "appbundler doens't know this source type"
+          end
+        end
+
+        seen_gems = {}
+
+        t.puts "# GEMS FROM GEMFILE:"
+
+        requested_dependencies(without).each do |dep|
+          next if SHITLIST.include?(dep.name)
+          if locked_gems[dep.name]
+            t.puts locked_gems[dep.name]
+          else
+            string = %Q{gem "#{dep.name}", #{requirement_to_str(dep.requirement)}}
+            string << %Q{, platform: #{dep.platforms}} unless dep.platforms.empty?
+            t.puts string
+          end
+          seen_gems[dep.name] = true
+        end
+
+        t.puts "# GEMS FROM LOCKFILE: "
+
+        locked_gems.each do |name, line|
+          next if SHITLIST.include?(name)
+          next if seen_gems[name]
+          t.puts line
+        end
+
+        t.close
+        puts IO.read(t.path)  # debugging
+        Dir.chdir(app_dir) do
+          FileUtils.rm_f "#{app_dir}/Gemfile.lock"
+          Bundler.with_clean_env do
+            so = Mixlib::ShellOut.new("bundle lock", env: { "BUNDLE_GEMFILE" => t.path })
+            so.run_command
+            so.error!
+          end
+        end
+      end
+      return "#{app_dir}/Gemfile.lock"
     end
 
     def write_executable_stubs
@@ -152,7 +249,11 @@ E
     end
 
     def runtime_dep_specs
-      add_dependencies_from(app_spec)
+      if external_lockfile?
+        local_gemfile_lock_specs
+      else
+        add_dependencies_from(app_spec)
+      end
     end
 
     def app_dependency_names
@@ -165,6 +266,10 @@ E
 
     def app_spec
       spec_for(name)
+    end
+
+    def app_dir
+      app_gemspec.gem_dir
     end
 
     def gemfile_lock_specs
