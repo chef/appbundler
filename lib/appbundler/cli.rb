@@ -73,11 +73,9 @@ BANNER
         @bundle_path = File.expand_path(cli_arguments[0])
         @bin_path = File.expand_path(cli_arguments[1])
         @gems = cli_arguments[2..-1]
-        @gems = [ File.basename(@bundle_path) ] if @gems.empty?
+        @gems = [ nil ] if @gems.empty?
         verify_bundle_path
         verify_bin_path
-        verify_gems_installed
-        verify_deps_are_accessible
       end
     end
 
@@ -95,31 +93,6 @@ BANNER
       if !File.directory?(bin_path)
         err("BINSTUB_DIR `#{bin_path}' is not a directory or doesn't exist")
         usage_and_exit!
-      end
-    end
-
-    def verify_gems_installed
-      gems.each do |g|
-        begin
-          app = App.new(bundle_path, bin_path, g)
-          app.app_gemspec
-        rescue Gem::LoadError
-          err("Unable to find #{app.app_spec.name} #{app.app_spec.version} installed as a gem")
-          err("You must install the top-level app as a gem before calling app-bundler")
-          usage_and_exit!
-        end
-      end
-    end
-
-    def verify_deps_are_accessible
-      gems.each do |g|
-        begin
-          app = App.new(bundle_path, bin_path, g)
-          app.verify_deps_are_accessible!
-        rescue InaccessibleGemsInLockfile => e
-          err(e.message)
-          exit 1
-        end
       end
     end
 

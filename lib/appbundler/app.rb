@@ -53,7 +53,7 @@ module Appbundler
     ]
 
     def external_lockfile?
-      app_dir != File.dirname(gemfile_lock)
+      app_dir != bundle_path
     end
 
     def local_gemfile_lock_specs
@@ -244,7 +244,7 @@ E
     end
 
     def executables
-      spec = app_gemspec
+      spec = installed_spec
       spec.executables.map { |e| spec.bin_file(e) }
     end
 
@@ -260,16 +260,24 @@ E
       @app_dependency_names ||= app_spec.dependencies.map(&:name)
     end
 
-    def app_gemspec
+    def installed_spec
       Gem::Specification.find_by_name(app_spec.name, app_spec.version)
     end
 
     def app_spec
-      spec_for(name)
+      if name.nil?
+        Gem::Specification.load("#{bundle_path}/#{File.basename(@bundle_path)}.gemspec")
+      else
+        spec_for(name)
+      end
     end
 
     def app_dir
-      app_gemspec.gem_dir
+      if name.nil?
+        File.dirname(app_spec.loaded_from)
+      else
+        installed_spec.gem_dir
+      end
     end
 
     def gemfile_lock_specs
