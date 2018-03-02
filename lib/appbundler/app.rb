@@ -66,9 +66,24 @@ module Appbundler
       end.compact
     end
 
+    # Copy over any .bundler and Gemfile.lock files to the target gem
+    # directory.  This will let us run tests from under that directory.
+    def copy_bundler_env
+      gem_path = installed_spec.gem_dir
+      # If we're already using that directory, don't copy (it won't work anyway)
+      return if gem_path == File.dirname(gemfile_lock)
+      FileUtils.install(gemfile_lock, gem_path, :mode => 0644)
+      if File.exist?(dot_bundle_dir) && File.directory?(dot_bundle_dir)
+        FileUtils.cp_r(dot_bundle_dir, gem_path)
+        FileUtils.chmod_R("ugo+rX", File.join(gem_path, ".bundle"))
+      end
+    end
+
     def write_merged_lockfiles(without: [])
-      # just return we don't have an external lockfile
-      return unless external_lockfile?
+      unless external_lockfile?
+        copy_bundler_env
+        return
+      end
 
       # handle external lockfile
       Tempfile.open(".appbundler-gemfile", app_dir) do |t|
