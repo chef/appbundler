@@ -142,6 +142,7 @@ module Appbundler
             so.run_command
             so.error!
           end
+          FileUtils.mv t.path, "#{app_dir}/Gemfile.lock"
         end
       end
       return "#{app_dir}/Gemfile.lock"
