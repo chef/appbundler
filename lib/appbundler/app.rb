@@ -142,10 +142,10 @@ module Appbundler
             so.run_command
             so.error!
           end
-          FileUtils.mv t.path, "#{app_dir}/Gemfile.lock"
+          FileUtils.mv t.path, "#{app_dir}/Gemfile"
         end
       end
-      return "#{app_dir}/Gemfile.lock"
+      return "#{app_dir}/Gemfile"
     end
 
     def write_executable_stubs
