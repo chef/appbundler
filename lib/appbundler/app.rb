@@ -227,6 +227,14 @@ E
       <<-EOS
 ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"
 require "rubygems"
+
+begin
+  # this works around rubygems/rubygems#2196 and can be removed in rubygems > 2.7.6
+  require "rubygems/bundler_version_finder"
+rescue LoadError
+  # probably means rubygems is too old or too new to have this class, and we don't care
+end
+
 ::Gem.clear_paths
 EOS
     end
