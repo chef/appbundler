@@ -236,10 +236,10 @@ rescue LoadError
 end
 
 # avoid appbundling if we are definitely running within a Bundler bundle.
-# most likely the check for defined(Bundler) is enough since we don't require
+# most likely the check for defined?(Bundler) is enough since we don't require
 # bundler above, but just for paranoia's sake also we test to see if Bundler is
 # really doing its thing or not.
-unless defined(Bundler) && Bundler.instance_variable_defined?("@load")
+unless defined?(Bundler) && Bundler.instance_variable_defined?("@load")
   ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"
   ::Gem.clear_paths
 EOS
