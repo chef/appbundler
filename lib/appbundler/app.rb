@@ -226,7 +226,6 @@ E
     # exists to make tests run correctly on travis.ci (which uses rvm).
     def env_sanitizer
       <<-EOS
-ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"
 require "rubygems"
 
 begin
@@ -236,13 +235,19 @@ rescue LoadError
   # probably means rubygems is too old or too new to have this class, and we don't care
 end
 
-::Gem.clear_paths
+# avoid appbundling if we are definitely running within a Bundler bundle.
+# most likely the check for defined(Bundler) is enough since we don't require
+# bundler above, but just for paranoia's sake also we test to see if Bundler is
+# really doing its thing or not.
+unless defined(Bundler) && Bundler.instance_variable_defined?("@load")
+  ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"
+  ::Gem.clear_paths
 EOS
     end
 
     def runtime_activate
       @runtime_activate ||= begin
-        statements = runtime_dep_specs.map { |s| %Q{gem "#{s.name}", "= #{s.version}"} }
+        statements = runtime_dep_specs.map { |s| %Q{  gem "#{s.name}", "= #{s.version}"} }
         activate_code = ""
         activate_code << env_sanitizer << "\n"
         activate_code << statements.join("\n") << "\n"
@@ -258,9 +263,12 @@ EOS
       name, version = app_spec.name, app_spec.version
       bin_basename = File.basename(bin_file)
       <<-E
-gem "#{name}", "= #{version}"
+  gem "#{name}", "= #{version}"
+  spec = Gem::Specification.find_by_name("#{name}", "= #{version}")
+else
+  spec = Gem::Specification.find_by_name("#{name}")
+end
 
-spec = Gem::Specification.find_by_name("#{name}", "= #{version}")
 bin_file = spec.bin_file("#{bin_basename}")
 
 Kernel.load(bin_file)
