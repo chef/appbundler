@@ -18,5 +18,4 @@ branches:
 
 bundler_args: --jobs 7 --without docs debug
 
-# The integration tests need to see installed gems.
-script: rspec --color --format progress
+script: bundle exec rake
