@@ -6,8 +6,8 @@ require "appbundler/version"
 Gem::Specification.new do |spec|
   spec.name          = "appbundler"
   spec.version       = Appbundler::VERSION
-  spec.authors       = ["Dan DeLeo"]
-  spec.email         = ["dan@chef.io"]
+  spec.authors       = ["Chef Software, Inc."]
+  spec.email         = ["info@chef.io"]
   spec.description   = %q{Extracts a dependency solution from bundler's Gemfile.lock to speed gem activation}
   spec.summary       = spec.description
   spec.homepage      = "https://github.com/chef/appbundler"
