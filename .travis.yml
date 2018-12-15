@@ -17,8 +17,7 @@ branches:
   only:
     - master
 
-install:
-  - bundle install --jobs 3 --retry 3
+bundler_args: --jobs 7 --without docs debug
 
 # The integration tests need to see installed gems.
 script: rspec --color --format progress
