@@ -85,7 +85,7 @@ This is simply a bug, although in practice it has turned into a feature.  You sh
 always be doing downstream gem releases in order to consume them in omnibus builds.  If this becomes a blocker this bug should just be fixed, but in practice this
 has been a feature that has pushed development down the correct path.
 
-## ChefDK transitive development gem Gemfile.locking madness
+### ChefDK transitive development gem Gemfile.locking madness
 
 A sub-concern and design goal of the three-argument mega-Gemfile.lock appbundling feature is decoupling the purely development gem dependencies of sub-applications
 from each other.  This feature should perhaps have been designed to be decoupled, but since the whole feature was written somewhat "tactically" (aka "code rage")
