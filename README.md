@@ -131,6 +131,8 @@ conflict during generation of the transitive per-app gemfile.lock.
 This argument does not affect the shipping apps in the omnibus build (that should be handled by `--without` arguments to the `bundle install`) or affect the generated
 binstubs.  It is only in the codepath of the transitive lock generation and only affects the groups defined in the sub-application's Gemfile.
 
+The `--without` argument was also added to the 3-argument version of appbundler specifically to handle this issue.  It is silently ignored on the 2-argument version.
+
 ## Usage
 
 Install via rubygems: `gem install appbundler` or clone this project and bundle install:
