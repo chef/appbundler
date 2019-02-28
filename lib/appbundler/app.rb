@@ -18,12 +18,30 @@ module Appbundler
     attr_reader :target_bin_dir
     attr_reader :name
 
+    # The bundle_path is always the path to the Gemfile.lock being used, e.g.
+    # /var/cache/omnibus/src/chef/chef-14.10.9/Gemfile.lock or whatever.  If
+    # the name if the gem is not set then we behave like old style 2-arg appbundling
+    # where the gem we are appbundling is in the gemspec in that directory.
+    #
+    # If the name is not nil, then we are doing a multiple-app appbundle where
+    # the Gemfile.lock is the omnibus Gemfile.lock and multiple app gems may be
+    # appbundled against the same Gemfile.lock.
+    #
+    # @param bundle_path [String] the directory path of the Gemfile.lock
+    # @param target_bin_dir [String] the binstub dir, e.g. /opt/chefdk/bin
+    # @param name [String] name of the gem
     def initialize(bundle_path, target_bin_dir, name)
       @bundle_path = bundle_path
       @target_bin_dir = target_bin_dir
       @name = name
     end
 
+    # For the 2-arg version this is the gemfile in the omnibus build directory:
+    # /var/cache/omnibus/src/chef/chef-14.10.9/Gemfile
+    #
+    # For the 3-arg version this is the gemfile in the gems installed directory:
+    # /opt/chefdk/embedded/lib/ruby/gems/2.5.0/gems/berkshelf-7.0.7/Gemfile
+    #
     def gemfile_path
       "#{app_dir}/Gemfile"
     end
@@ -38,6 +56,22 @@ module Appbundler
       req.as_list.map { |r| "\"#{r}\"" }.join(", ")
     end
 
+    # This is only used in the 3-arg version.  The gemfile_path is the path into the actual
+    # installed gem, e.g.: /opt/chefdk/embedded/lib/ruby/gems/2.5.0/gems/berkshelf-7.0.7/Gemfile
+    #
+    # The gemfile_lock is the omnibus gemfile.lock which is in this case:
+    # /var/cache/omnibus/src/chef-dk/chef-dk-3.8.14/Gemfile.lock
+    #
+    # This solves the app gems dependencies against the Gemfile.locks pins so that they do not
+    # conflict (assuming such a solution can be found).
+    #
+    # The "without" argument here applies to the app's Gemfile.  There is no information in
+    # a rendered Gemfile.lock about gem groupings (literally none of that information is ever
+    # rendered by bundler into a Gemfile.lock -- open one up and look for yourself).  So this
+    # without argument then applies only to the transitive gemfile locking creation.  This
+    # codepath does not affect what gems we ship, and does not affect the generation of the
+    # binstubs.
+    #
     def requested_dependencies(without)
       Bundler.settings.temporary(without: without) do
         definition = Bundler::Definition.build(gemfile_path, gemfile_lock, nil)
@@ -52,10 +86,27 @@ module Appbundler
       "github_changelog_generator",
     ]
 
+    # This is a check which is equivalent to asking if we are running 2-arg or 3-arg.  If
+    # we have an "external_lockfile" that means the chef-dk omnibus Gemfile.lock, e.g.:
+    # /var/cache/omnibus/src/chef-dk/chef-dk-3.8.14/Gemfile.lock is being merged with the
+    # Gemfile in e.g. /opt/chefdk/embedded/lib/ruby/gems/2.5.0/gems/berkshelf-7.0.7/Gemfile.
+    # Hence the lockfile is "external" to the gem (it made sense to me at the time).
+    #
+    # If it is not then we're dealing with a single gem install from a single project and not
+    # doing any of the transitive locking and we generate a single set of binstubs from a single
+    # app in a single Gemfile.lock
+    #
     def external_lockfile?
       app_dir != bundle_path
     end
 
+    # This loads the specs from the Gemfile.lock which is called on the command line and is in
+    # the omnibus build space.
+    #
+    # Somewhat confusingly this is also the same as the "external" gemfile.lock, which was originally
+    # called the "local" gemfile.lock here.  In either case it is something like:
+    # /var/cache/omnibus/src/chef-dk/chef-dk-3.8.14/Gemfile.lock
+    #
     def local_gemfile_lock_specs
       gemfile_lock_specs.map do |s|
         #if SHITLIST.include?(s.name)
@@ -68,6 +119,10 @@ module Appbundler
 
     # Copy over any .bundler and Gemfile.lock files to the target gem
     # directory.  This will let us run tests from under that directory.
+    #
+    # This is only on the 2-arg implementations pathway.  This is not used
+    # for the 3-arg version.
+    #
     def copy_bundler_env
       gem_path = installed_spec.gem_dir
       # If we're already using that directory, don't copy (it won't work anyway)
@@ -79,6 +134,12 @@ module Appbundler
       end
     end
 
+    # This is the implementation of the 3-arg version of writing the merged lockfiles,
+    # when called with the 2-arg version it short-circuits, however, to the copy_bundler_env
+    # version above.
+    #
+    # This code does not affect the generated binstubs at all.
+    #
     def write_merged_lockfiles(without: [])
       unless external_lockfile?
         copy_bundler_env
@@ -296,6 +357,12 @@ E
       Gem::Specification.find_by_name(app_spec.name, app_spec.version)
     end
 
+    # In the 2-arg version of appbundler this loads the gemspec from the omnibus source
+    # build directory (e.g. /var/cache/omnibus/src/chef/chef-14.10.9/chef.gemspec)
+    #
+    # For the 3-arg version of appbundler this loads the gemspec from the installed path
+    # of the gem (e.g. /opt/chefdk/embedded/lib/ruby/gems/2.5.0/specifications/berkshelf-7.0.7.gemspec)
+    #
     def app_spec
       if name.nil?
         Gem::Specification.load("#{bundle_path}/#{File.basename(@bundle_path)}.gemspec")
@@ -304,6 +371,12 @@ E
       end
     end
 
+    # In the 2-arg version of appbundler this will be the the appdir of the gemspec in the
+    # omnibus build directory (e.g. /var/cache/omnibus/src/chef/chef-14.10.9)
+    #
+    # In the 3-arg version of appbundler this will be the installed gems path
+    # (e.g. /opt/chefdk/embedded/lib/ruby/gems/2.5.0/gems/berkshelf-7.0.7/)
+    #
     def app_dir
       if name.nil?
         File.dirname(app_spec.loaded_from)

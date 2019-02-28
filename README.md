@@ -79,17 +79,57 @@ host is entirely configurable in those tools.  The only major conflict is in the
 more simplified Gemfile with a pinned chef version, berkshelf and chefspec and to `bundle install` and `bundle exec rspec` against the Gemfile.lock.  This
 targeted use of bundler is vastly simpler than attempting to create a Chef-12 "version" of ChefDK 3.x.
 
-### Developers should call `--without` on the `bundle install`
-
-Appbundling in this form does not support `--without` nor should it.  That should be applied to the `bundle install` command that is used to install the gemset, not
-to the appbundle command itself.  If there are development dependencies in the Gemfile.lock those should not be installed, much less appbundled.  Trying to exclude
-installed gemsets from an appbundle is going down the road of trying to defeat the purpose of the design which will lead to transitive Gemfile.lock problems.
-
 ### BUG: you cannot install git gems using this method
 
 This is simply a bug, although in practice it has turned into a feature.  You should never ship git checked out non production released gems to customers, so should
 always be doing downstream gem releases in order to consume them in omnibus builds.  If this becomes a blocker this bug should just be fixed, but in practice this
 has been a feature that has pushed development down the correct path.
+
+## ChefDK transitive development gem Gemfile.locking madness
+
+A sub-concern and design goal of the three-argument mega-Gemfile.lock appbundling feature is decoupling the purely development gem dependencies of sub-applications
+from each other.  This feature should perhaps have been designed to be decoupled, but since the whole feature was written somewhat "tactically" (aka "code rage")
+to deal with the complexity of the ChefDK builds and this feature is necessary there and came along for the ride.
+
+The ChefDK Gemfile.lock is already hard enough to build as it is, and it does not include any of the development gems for its sub-applications (berkshelf, test-kitchen,
+foodcritic, chefspec, etc, etc, etc).  It is already difficult enough to generate a sane single runtime closure across all the runtime gems.  The development gems used
+to test berkshelf, etc should not be shipped in the omnibus build.  It is also an enormous amount of developer pain to keep the development gems consistent across all
+of those projects, particularly when several of them are or historically were external to the company.
+
+The result of that was a feature of the three argument version of appbundler where it takes the pins from the master ChefDK Gemfile.lock and merges those with the
+gem statements in the Gemfile of the application (e.g. berkshelf) and then creates a combined Gemfile.lock which is written out in the gem directory.  So for ChefDK
+3.8.14 the combined Gemfile.lock which is created for berkshelf is:
+
+```
+/opt/chefdk/embedded/lib/ruby/gems/2.5.0/gems/berkshelf-7.0.7/.appbundler-gemfile20190227-93370-84j06u.lock
+```
+
+That Gemfile.lock is only solved, but not installed at build time when appbundler runs (`bundle lock` not `bundle update/install`) so that the development gems are not
+shipped.  In the testing phase of CI a `bundle install` is run against that so that all the development gems are installed on the testing box, all the pins in the
+master Gemfile.lock will be applied (and those gems are already installed) and all the development gems of the app are installed with the constraints specified in
+the Gemfile of the application.  The testing suite is then run via `bundle exec` against this Gemfile.lock via the `chef test` command.
+
+This ensures that we test the app against every gem pin that we ship, while we allow dev pins between different apps to potentially conflict since those have meaning
+only to the app in question.
+
+Yes, this is complicated, but the alternative(s) would be to either bake every dev gem into the master Gemfile.lock and take the pain of reconciling otherwise meaningless
+gem conficts, or to allow gems to float outside of the Gemfile.lock pins and to be guaranteed of shipping defects sooner or later due to not testing against exactly
+what we ship.
+
+For any consumers outside of ChefDK this Gemfile.lock being created can happily be entirely ignored and it won't hurt you at all.
+
+## The meaning of the --without arg is not what you think
+
+The --without argument to appbundler in the three argument version does not apply to the installed gemset (that is handled entirely by the one `bundle install` which
+should be run against the master Gemfile.lock before appbundler runs) and it does not apply to the appbundled binstubs.
+
+What the --without argument does is affect the rendered transitive gemfile.lock and is used to filter out unnecessary dependencies which conflict with the master
+Gemfile.lock in the omnibus project.  A notable example of this was the github-changelog-generator gem which would pin gems (like `addressable`) to restrictive pins
+and would not solve against the ChefDK master Gemfile.lock.  If github-changelog-generator was in a `:changelog` group it could then be excluded here, and it would not
+conflict during generation of the transitive per-app gemfile.lock.
+
+This argument does not affect the shipping apps in the omnibus build (that should be handled by `--without` arguments to the `bundle install`) or affect the generated
+binstubs.  It is only in the codepath of the transitive lock generation and only affects the groups defined in the sub-application's Gemfile.
 
 ## Usage
 
