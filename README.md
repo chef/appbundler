@@ -79,6 +79,10 @@ host is entirely configurable in those tools.  The only major conflict is in the
 more simplified Gemfile with a pinned chef version, berkshelf and chefspec and to `bundle install` and `bundle exec rspec` against the Gemfile.lock.  This
 targeted use of bundler is vastly simpler than attempting to create a Chef-12 "version" of ChefDK 3.x.
 
+The alternative of trying to rebuild appbundled binstubs against an already built Chef-DK is documented here and is terrible idea:
+
+https://github.com/chef/chef-dk/issues/1559#issuecomment-468103827
+
 ### BUG: you cannot install git gems using this method
 
 This is simply a bug, although in practice it has turned into a feature.  You should never ship git checked out non production released gems to customers, so should
