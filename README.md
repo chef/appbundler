@@ -118,7 +118,7 @@ what we ship.
 
 For any consumers outside of ChefDK this Gemfile.lock being created can happily be entirely ignored and it won't hurt you at all.
 
-## The meaning of the --without arg is not what you think
+### The meaning of the --without arg is not what you think
 
 The --without argument to appbundler in the three argument version does not apply to the installed gemset (that is handled entirely by the one `bundle install` which
 should be run against the master Gemfile.lock before appbundler runs) and it does not apply to the appbundled binstubs.
