@@ -59,7 +59,7 @@ The aggressive pinning of all gems in the Gemfile.lock against all apps in the G
 
 ### Appbundler and bundler coexistance
 
-Since this approach is deliberately inflexible against updating the sppbundle pins in order to prevent transitive gem issues, it is instead possible and encouraged to
+Since this approach is deliberately inflexible against updating the appbundle pins in order to prevent transitive gem issues, it is instead possible and encouraged to
 use Gemfile and bundler as usual.  If the binstubs detect that they are running from within bundler against an external Gemfile.lock they do not apply any pins
 at all.
 
@@ -173,7 +173,7 @@ bin/appbundler ~/oc/chef ~/appbundler-bin
 Now you can run all of the app's executables with locked down deps:
 
 ```shell
-~/appbunlder-bin/chef-client -v
+~/appbundler-bin/chef-client -v
 ```
 
 ## RVM
