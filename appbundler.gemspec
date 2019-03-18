@@ -6,8 +6,8 @@ require "appbundler/version"
 Gem::Specification.new do |spec|
   spec.name          = "appbundler"
   spec.version       = Appbundler::VERSION
-  spec.authors       = ["Dan DeLeo"]
-  spec.email         = ["dan@chef.io"]
+  spec.authors       = ["Chef Software, Inc."]
+  spec.email         = ["info@chef.io"]
   spec.description   = %q{Extracts a dependency solution from bundler's Gemfile.lock to speed gem activation}
   spec.summary       = spec.description
   spec.homepage      = "https://github.com/chef/appbundler"
@@ -18,12 +18,12 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
-  spec.required_ruby_version = ">= 2.2.0"
+  spec.required_ruby_version = ">= 2.3"
 
   spec.add_development_dependency "rake"
   spec.add_development_dependency "rspec", "~> 3.0"
   spec.add_development_dependency "pry"
 
-  spec.add_dependency "mixlib-shellout", "~> 2.0"
-  spec.add_dependency "mixlib-cli", "~> 1.4"
+  spec.add_dependency "mixlib-shellout", ">= 2.0", "< 4.0"
+  spec.add_dependency "mixlib-cli", ">= 1.4", "< 3.0"
 end
