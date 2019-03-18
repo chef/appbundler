@@ -15,7 +15,9 @@ github:
   version_tag_format: "v{{version}}"
   # allow bumping the minor release via label
   minor_bump_labels:
-    - "Expeditor: Bump Minor Version"
+    - "Expeditor: Bump Version Minor"
+  major_bump_labels:
+    - "Expeditor: Bump Version Major"
 
 changelog:
   rollup_header: Changes not yet released to rubygems.org
