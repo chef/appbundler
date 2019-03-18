@@ -2,17 +2,18 @@
 
 This file is used to document the changes between releases of Appbundler
 
-<!-- latest_release 0.11.8 -->
-## [v0.11.8](https://github.com/chef/appbundler/tree/v0.11.8) (2019-03-06)
+<!-- latest_release 0.11.9 -->
+## [v0.11.9](https://github.com/chef/appbundler/tree/v0.11.9) (2019-03-18)
 
 #### Merged Pull Requests
-- Update README.md [#47](https://github.com/chef/appbundler/pull/47) ([markan](https://github.com/markan))
+- Require ruby 2.3+ and loosen gem deps [#48](https://github.com/chef/appbundler/pull/48) ([tas50](https://github.com/tas50))
 <!-- latest_release -->
 
 <!-- release_rollup since=0.11.6 -->
 ### Changes not yet released to rubygems.org
 
 #### Merged Pull Requests
+- Require ruby 2.3+ and loosen gem deps [#48](https://github.com/chef/appbundler/pull/48) ([tas50](https://github.com/tas50)) <!-- 0.11.9 -->
 - Update README.md [#47](https://github.com/chef/appbundler/pull/47) ([markan](https://github.com/markan)) <!-- 0.11.8 -->
 <!-- release_rollup -->
 
