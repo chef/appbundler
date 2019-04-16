@@ -27,6 +27,12 @@ BANNER
       :proc => lambda { |o| o.split(/[\s,]+/) },
       :default => []
 
+    option :extra_bin_files,
+      :long => "--extra-bin-files bin1,bin2",
+      :description => "Comma separated list of extra binstubs to wire up which are not listed in the gemspec",
+      :proc => lambda { |o| o.split(/[\s,]+/) },
+      :default => []
+
     option :version,
       :short => "-v",
       :long => "--version",
@@ -98,7 +104,7 @@ BANNER
 
     def run
       gems.each do |g|
-        app = App.new(bundle_path, bin_path, g)
+        app = App.new(bundle_path, bin_path, g, extra_bin_files)
         created_stubs = app.write_executable_stubs
         created_stubs.each do |real_executable_path, stub_path|
           $stdout.puts "Generated binstub #{stub_path} => #{real_executable_path}"

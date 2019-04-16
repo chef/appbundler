@@ -17,6 +17,7 @@ module Appbundler
     attr_reader :bundle_path
     attr_reader :target_bin_dir
     attr_reader :name
+    attr_reader :extra_bin_files
 
     # The bundle_path is always the path to the Gemfile.lock being used, e.g.
     # /var/cache/omnibus/src/chef/chef-14.10.9/Gemfile.lock or whatever.  If
@@ -30,10 +31,11 @@ module Appbundler
     # @param bundle_path [String] the directory path of the Gemfile.lock
     # @param target_bin_dir [String] the binstub dir, e.g. /opt/chefdk/bin
     # @param name [String] name of the gem
-    def initialize(bundle_path, target_bin_dir, name)
+    def initialize(bundle_path, target_bin_dir, name, extra_bin_files = [])
       @bundle_path = bundle_path
       @target_bin_dir = target_bin_dir
       @name = name
+      @extra_bin_files = extra_bin_files
     end
 
     # For the 2-arg version this is the gemfile in the omnibus build directory:
@@ -337,8 +339,7 @@ E
     end
 
     def executables
-      spec = installed_spec
-      spec.executables.map { |e| spec.bin_file(e) }
+      installed_spec.executables.map { |e| spec.bin_file(e) } + extra_bin_files
     end
 
     def runtime_dep_specs
