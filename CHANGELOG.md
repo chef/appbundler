@@ -2,10 +2,18 @@
 
 This file is used to document the changes between releases of Appbundler
 
-<!-- latest_release -->
+<!-- latest_release 0.12.1 -->
+## [v0.12.1](https://github.com/chef/appbundler/tree/v0.12.1) (2019-04-16)
+
+#### Merged Pull Requests
+- add support for extra bin files not in the binstubs [#50](https://github.com/chef/appbundler/pull/50) ([lamont-granquist](https://github.com/lamont-granquist))
 <!-- latest_release -->
 
-<!-- release_rollup -->
+<!-- release_rollup since=0.12.0 -->
+### Changes not yet released to rubygems.org
+
+#### Merged Pull Requests
+- add support for extra bin files not in the binstubs [#50](https://github.com/chef/appbundler/pull/50) ([lamont-granquist](https://github.com/lamont-granquist)) <!-- 0.12.1 -->
 <!-- release_rollup -->
 
 <!-- latest_stable_release -->
@@ -16,4 +24,3 @@ This file is used to document the changes between releases of Appbundler
 - Require ruby 2.3+ and loosen gem deps [#48](https://github.com/chef/appbundler/pull/48) ([tas50](https://github.com/tas50))
 - Fix the labels to properly bump the gem [#49](https://github.com/chef/appbundler/pull/49) ([tas50](https://github.com/tas50))
 <!-- latest_stable_release -->
-
