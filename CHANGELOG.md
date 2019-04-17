@@ -2,26 +2,23 @@
 
 This file is used to document the changes between releases of Appbundler
 
-<!-- latest_release 0.12.3 -->
+<!-- latest_release -->
+<!-- latest_release -->
+
+<!-- release_rollup -->
+<!-- release_rollup -->
+
+<!-- latest_stable_release -->
 ## [v0.12.3](https://github.com/chef/appbundler/tree/v0.12.3) (2019-04-17)
 
 #### Merged Pull Requests
 - syntax fix [#52](https://github.com/chef/appbundler/pull/52) ([lamont-granquist](https://github.com/lamont-granquist))
-<!-- latest_release -->
-
-<!-- release_rollup since=0.12.2 -->
-### Changes not yet released to rubygems.org
-
-#### Merged Pull Requests
-- syntax fix [#52](https://github.com/chef/appbundler/pull/52) ([lamont-granquist](https://github.com/lamont-granquist)) <!-- 0.12.3 -->
-<!-- release_rollup -->
-
 <!-- latest_stable_release -->
+
 ## [v0.12.2](https://github.com/chef/appbundler/tree/v0.12.2) (2019-04-16)
 
 #### Merged Pull Requests
 - fix syntax for cli options [#51](https://github.com/chef/appbundler/pull/51) ([lamont-granquist](https://github.com/lamont-granquist))
-<!-- latest_stable_release -->
 
 ## [v0.12.1](https://github.com/chef/appbundler/tree/v0.12.1) (2019-04-16)
 
