@@ -339,7 +339,7 @@ E
     end
 
     def executables
-      installed_spec.executables.map { |e| spec.bin_file(e) } + extra_bin_files
+      installed_spec.executables.map { |e| installed_spec.bin_file(e) } + extra_bin_files
     end
 
     def runtime_dep_specs
