@@ -19,8 +19,8 @@ module Appbundler
     attr_reader :name
     attr_reader :extra_bin_files
 
-    # The bundle_path is always the path to the Gemfile.lock being used, e.g.
-    # /var/cache/omnibus/src/chef/chef-14.10.9/Gemfile.lock or whatever.  If
+    # The bundle_path is always the path to the directory containing the Gemfile.lock
+    # being used, e.g.  /var/cache/omnibus/src/chef/chefor whatever.  If
     # the name if the gem is not set then we behave like old style 2-arg appbundling
     # where the gem we are appbundling is in the gemspec in that directory.
     #
@@ -142,7 +142,7 @@ module Appbundler
     def copy_binstubs(binstubs_source)
       gem_path = installed_spec.gem_dir
       dst = "#{gem_path}/bin"
-      src = "#{gem_path}/#{binstubs_source}/*"
+      src = File.join(bundle_path, binstubs_source, "*")
       FileUtils.cp_r(Dir.glob(src), dst)
     end
 
