@@ -11,15 +11,15 @@ describe Appbundler do
   end
 
   def double_spec(name, version, dep_names)
-    deps = dep_names.map { |n| double("Bundler::Dependency #{n}", :name => n.to_s) }
+    deps = dep_names.map { |n| double("Bundler::Dependency #{n}", name: n.to_s) }
     source = double("Bundler::Source::Rubygems")
-    spec = double("Bundler::LazySpecification '#{name}'", :name => name.to_s, :version => version, :dependencies => deps, :source => source)
+    spec = double("Bundler::LazySpecification '#{name}'", name: name.to_s, version: version, dependencies: deps, source: source)
     all_specs << spec
     spec
   end
 
   def shellout!(cmd)
-    s = Mixlib::ShellOut.new(cmd, :env => { "RUBYOPT" => nil, "BUNDLE_GEMFILE" => nil, "APPBUNDLER_ALLOW_RVM" => "true" })
+    s = Mixlib::ShellOut.new(cmd, env: { "RUBYOPT" => nil, "BUNDLE_GEMFILE" => nil, "APPBUNDLER_ALLOW_RVM" => "true" })
     s.run_command
     s.error!
     s
@@ -99,23 +99,23 @@ describe Appbundler do
     end
 
     it "locks the main app's gem via rubygems, and loads the proper binary" do
-      expected_loading_code = <<-CODE
-gem "app", "= 1.0.0"
+      expected_loading_code = <<~CODE
+        gem "app", "= 1.0.0"
 
-spec = Gem::Specification.find_by_name("app", "= 1.0.0")
-bin_file = spec.bin_file("foo")
+        spec = Gem::Specification.find_by_name("app", "= 1.0.0")
+        bin_file = spec.bin_file("foo")
 
-Kernel.load(bin_file)
-CODE
+        Kernel.load(bin_file)
+      CODE
       expect(app.load_statement_for(bin_path)).to eq(expected_loading_code)
     end
 
     it "generates code to override GEM_HOME and GEM_PATH (e.g., rvm)" do
-      expected = <<-EOS
-ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"
-require "rubygems"
-::Gem.clear_paths
-EOS
+      expected = <<~EOS
+        ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"
+        require "rubygems"
+        ::Gem.clear_paths
+      EOS
 
       expect(app.env_sanitizer).to eq(expected)
       expect(app.runtime_activate).to include(expected)
@@ -134,10 +134,10 @@ EOS
       end
 
       it "generates batchfile stub code" do
-        expected_batch_code = <<-E
-@ECHO OFF
-"%~dp0\\..\\embedded\\bin\\ruby.exe" "%~dpn0" %*
-E
+        expected_batch_code = <<~E
+          @ECHO OFF
+          "%~dp0\\..\\embedded\\bin\\ruby.exe" "%~dpn0" %*
+        E
         expect(app.batchfile_stub).to eq(expected_batch_code)
       end
 
@@ -155,8 +155,8 @@ E
 
       # Ensure that the behavior we emulate in our stubs is correct:
       it "sanity checks rubygems behavior" do
-        expect { Gem::Specification.find_by_name("there-is-no-such-gem-named-this", "= 999.999.999") }.
-          to raise_error(Gem::LoadError)
+        expect { Gem::Specification.find_by_name("there-is-no-such-gem-named-this", "= 999.999.999") }
+          .to raise_error(Gem::LoadError)
       end
 
       context "and the gems are not accessible by rubygems" do
@@ -238,123 +238,123 @@ E
 
     it "generates runtime activation code for the app" do
       expected_gem_activates = if windows?
-                                 <<-E
-ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"
-require "rubygems"
-::Gem.clear_paths
+                                 <<~E
+                                   ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"
+                                   require "rubygems"
+                                   ::Gem.clear_paths
 
-gem "chef", "= 12.4.1"
-gem "chef-config", "= 12.4.1"
-gem "mixlib-config", "= 2.2.1"
-gem "mixlib-shellout", "= 2.2.0"
-gem "win32-process", "= 0.7.5"
-gem "ffi", "= 1.9.10"
-gem "chef-zero", "= 4.3.0"
-gem "ffi-yajl", "= 2.2.2"
-gem "libyajl2", "= 1.2.0"
-gem "hashie", "= 2.1.2"
-gem "mixlib-log", "= 1.6.0"
-gem "rack", "= 1.6.4"
-gem "uuidtools", "= 2.1.5"
-gem "diff-lcs", "= 1.2.5"
-gem "erubis", "= 2.7.0"
-gem "highline", "= 1.7.3"
-gem "mixlib-authentication", "= 1.3.0"
-gem "mixlib-cli", "= 1.5.0"
-gem "net-ssh", "= 2.9.2"
-gem "net-ssh-multi", "= 1.2.1"
-gem "net-ssh-gateway", "= 1.2.0"
-gem "ohai", "= 8.5.1"
-gem "ipaddress", "= 0.8.0"
-gem "mime-types", "= 2.6.1"
-gem "rake", "= 10.1.1"
-gem "systemu", "= 2.6.5"
-gem "wmi-lite", "= 1.0.0"
-gem "plist", "= 3.1.0"
-gem "pry", "= 0.9.12.6"
-gem "coderay", "= 1.1.0"
-gem "method_source", "= 0.8.2"
-gem "slop", "= 3.4.7"
-gem "win32console", "= 1.3.2"
-gem "rspec-core", "= 3.3.2"
-gem "rspec-support", "= 3.3.0"
-gem "rspec-expectations", "= 3.3.1"
-gem "rspec-mocks", "= 3.3.2"
-gem "rspec_junit_formatter", "= 0.2.3"
-gem "builder", "= 3.2.2"
-gem "serverspec", "= 2.23.1"
-gem "multi_json", "= 1.11.2"
-gem "rspec", "= 3.3.0"
-gem "rspec-its", "= 1.2.0"
-gem "specinfra", "= 2.43.3"
-gem "net-scp", "= 1.2.1"
-gem "net-telnet", "= 0.1.1"
-gem "sfl", "= 2.2"
-gem "syslog-logger", "= 1.6.8"
-gem "win32-api", "= 1.5.3"
-gem "win32-dir", "= 0.5.0"
-gem "win32-event", "= 0.6.1"
-gem "win32-ipc", "= 0.6.6"
-gem "win32-eventlog", "= 0.6.3"
-gem "win32-mmap", "= 0.4.1"
-gem "win32-mutex", "= 0.4.2"
-gem "win32-service", "= 0.8.6"
-gem "windows-api", "= 0.4.4"
-gem "windows-pr", "= 1.2.4"
-E
+                                   gem "chef", "= 12.4.1"
+                                   gem "chef-config", "= 12.4.1"
+                                   gem "mixlib-config", "= 2.2.1"
+                                   gem "mixlib-shellout", "= 2.2.0"
+                                   gem "win32-process", "= 0.7.5"
+                                   gem "ffi", "= 1.9.10"
+                                   gem "chef-zero", "= 4.3.0"
+                                   gem "ffi-yajl", "= 2.2.2"
+                                   gem "libyajl2", "= 1.2.0"
+                                   gem "hashie", "= 2.1.2"
+                                   gem "mixlib-log", "= 1.6.0"
+                                   gem "rack", "= 1.6.4"
+                                   gem "uuidtools", "= 2.1.5"
+                                   gem "diff-lcs", "= 1.2.5"
+                                   gem "erubis", "= 2.7.0"
+                                   gem "highline", "= 1.7.3"
+                                   gem "mixlib-authentication", "= 1.3.0"
+                                   gem "mixlib-cli", "= 1.5.0"
+                                   gem "net-ssh", "= 2.9.2"
+                                   gem "net-ssh-multi", "= 1.2.1"
+                                   gem "net-ssh-gateway", "= 1.2.0"
+                                   gem "ohai", "= 8.5.1"
+                                   gem "ipaddress", "= 0.8.0"
+                                   gem "mime-types", "= 2.6.1"
+                                   gem "rake", "= 10.1.1"
+                                   gem "systemu", "= 2.6.5"
+                                   gem "wmi-lite", "= 1.0.0"
+                                   gem "plist", "= 3.1.0"
+                                   gem "pry", "= 0.9.12.6"
+                                   gem "coderay", "= 1.1.0"
+                                   gem "method_source", "= 0.8.2"
+                                   gem "slop", "= 3.4.7"
+                                   gem "win32console", "= 1.3.2"
+                                   gem "rspec-core", "= 3.3.2"
+                                   gem "rspec-support", "= 3.3.0"
+                                   gem "rspec-expectations", "= 3.3.1"
+                                   gem "rspec-mocks", "= 3.3.2"
+                                   gem "rspec_junit_formatter", "= 0.2.3"
+                                   gem "builder", "= 3.2.2"
+                                   gem "serverspec", "= 2.23.1"
+                                   gem "multi_json", "= 1.11.2"
+                                   gem "rspec", "= 3.3.0"
+                                   gem "rspec-its", "= 1.2.0"
+                                   gem "specinfra", "= 2.43.3"
+                                   gem "net-scp", "= 1.2.1"
+                                   gem "net-telnet", "= 0.1.1"
+                                   gem "sfl", "= 2.2"
+                                   gem "syslog-logger", "= 1.6.8"
+                                   gem "win32-api", "= 1.5.3"
+                                   gem "win32-dir", "= 0.5.0"
+                                   gem "win32-event", "= 0.6.1"
+                                   gem "win32-ipc", "= 0.6.6"
+                                   gem "win32-eventlog", "= 0.6.3"
+                                   gem "win32-mmap", "= 0.4.1"
+                                   gem "win32-mutex", "= 0.4.2"
+                                   gem "win32-service", "= 0.8.6"
+                                   gem "windows-api", "= 0.4.4"
+                                   gem "windows-pr", "= 1.2.4"
+                                 E
                                else
-                                 <<-E
-ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"
-require "rubygems"
-::Gem.clear_paths
+                                 <<~E
+                                   ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"
+                                   require "rubygems"
+                                   ::Gem.clear_paths
 
-gem "chef", "= 12.4.1"
-gem "chef-config", "= 12.4.1"
-gem "mixlib-config", "= 2.2.1"
-gem "mixlib-shellout", "= 2.2.0"
-gem "chef-zero", "= 4.3.0"
-gem "ffi-yajl", "= 2.2.2"
-gem "libyajl2", "= 1.2.0"
-gem "hashie", "= 2.1.2"
-gem "mixlib-log", "= 1.6.0"
-gem "rack", "= 1.6.4"
-gem "uuidtools", "= 2.1.5"
-gem "diff-lcs", "= 1.2.5"
-gem "erubis", "= 2.7.0"
-gem "highline", "= 1.7.3"
-gem "mixlib-authentication", "= 1.3.0"
-gem "mixlib-cli", "= 1.5.0"
-gem "net-ssh", "= 2.9.2"
-gem "net-ssh-multi", "= 1.2.1"
-gem "net-ssh-gateway", "= 1.2.0"
-gem "ohai", "= 8.5.1"
-gem "ffi", "= 1.9.10"
-gem "ipaddress", "= 0.8.0"
-gem "mime-types", "= 2.6.1"
-gem "rake", "= 10.1.1"
-gem "systemu", "= 2.6.5"
-gem "wmi-lite", "= 1.0.0"
-gem "plist", "= 3.1.0"
-gem "pry", "= 0.9.12.6"
-gem "coderay", "= 1.1.0"
-gem "method_source", "= 0.8.2"
-gem "slop", "= 3.4.7"
-gem "rspec-core", "= 3.3.2"
-gem "rspec-support", "= 3.3.0"
-gem "rspec-expectations", "= 3.3.1"
-gem "rspec-mocks", "= 3.3.2"
-gem "rspec_junit_formatter", "= 0.2.3"
-gem "builder", "= 3.2.2"
-gem "serverspec", "= 2.23.1"
-gem "multi_json", "= 1.11.2"
-gem "rspec", "= 3.3.0"
-gem "rspec-its", "= 1.2.0"
-gem "specinfra", "= 2.43.3"
-gem "net-scp", "= 1.2.1"
-gem "net-telnet", "= 0.1.1"
-gem "sfl", "= 2.2"
-gem "syslog-logger", "= 1.6.8"
-E
+                                   gem "chef", "= 12.4.1"
+                                   gem "chef-config", "= 12.4.1"
+                                   gem "mixlib-config", "= 2.2.1"
+                                   gem "mixlib-shellout", "= 2.2.0"
+                                   gem "chef-zero", "= 4.3.0"
+                                   gem "ffi-yajl", "= 2.2.2"
+                                   gem "libyajl2", "= 1.2.0"
+                                   gem "hashie", "= 2.1.2"
+                                   gem "mixlib-log", "= 1.6.0"
+                                   gem "rack", "= 1.6.4"
+                                   gem "uuidtools", "= 2.1.5"
+                                   gem "diff-lcs", "= 1.2.5"
+                                   gem "erubis", "= 2.7.0"
+                                   gem "highline", "= 1.7.3"
+                                   gem "mixlib-authentication", "= 1.3.0"
+                                   gem "mixlib-cli", "= 1.5.0"
+                                   gem "net-ssh", "= 2.9.2"
+                                   gem "net-ssh-multi", "= 1.2.1"
+                                   gem "net-ssh-gateway", "= 1.2.0"
+                                   gem "ohai", "= 8.5.1"
+                                   gem "ffi", "= 1.9.10"
+                                   gem "ipaddress", "= 0.8.0"
+                                   gem "mime-types", "= 2.6.1"
+                                   gem "rake", "= 10.1.1"
+                                   gem "systemu", "= 2.6.5"
+                                   gem "wmi-lite", "= 1.0.0"
+                                   gem "plist", "= 3.1.0"
+                                   gem "pry", "= 0.9.12.6"
+                                   gem "coderay", "= 1.1.0"
+                                   gem "method_source", "= 0.8.2"
+                                   gem "slop", "= 3.4.7"
+                                   gem "rspec-core", "= 3.3.2"
+                                   gem "rspec-support", "= 3.3.0"
+                                   gem "rspec-expectations", "= 3.3.1"
+                                   gem "rspec-mocks", "= 3.3.2"
+                                   gem "rspec_junit_formatter", "= 0.2.3"
+                                   gem "builder", "= 3.2.2"
+                                   gem "serverspec", "= 2.23.1"
+                                   gem "multi_json", "= 1.11.2"
+                                   gem "rspec", "= 3.3.0"
+                                   gem "rspec-its", "= 1.2.0"
+                                   gem "specinfra", "= 2.43.3"
+                                   gem "net-scp", "= 1.2.1"
+                                   gem "net-telnet", "= 0.1.1"
+                                   gem "sfl", "= 2.2"
+                                   gem "syslog-logger", "= 1.6.8"
+                                 E
                                end
       expect(app.runtime_activate).to include(expected_gem_activates)
     end
@@ -391,8 +391,8 @@ E
       binary_2 = File.join(target_bindir, "app-binary-2")
       expect(File.exist?(binary_1)).to be(true)
       expect(File.exist?(binary_2)).to be(true)
-      expect(File.executable?(binary_1) || File.exists?(binary_1 + ".bat")).to be(true)
-      expect(File.executable?(binary_1) || File.exists?(binary_1 + ".bat")).to be(true)
+      expect(File.executable?(binary_1) || File.exist?(binary_1 + ".bat")).to be(true)
+      expect(File.executable?(binary_1) || File.exist?(binary_1 + ".bat")).to be(true)
       expect(shellout!(binary_1).stdout.strip).to eq("binary 1 ran")
       expect(shellout!(binary_2).stdout.strip).to eq("binary 2 ran")
     end
@@ -401,7 +401,7 @@ E
       spec = Gem::Specification.find_by_name("appbundler-example-app", "= 1.0.0")
       gem_path = spec.gem_dir
       app.copy_bundler_env
-      expect(File.exists?(File.join(gem_path, "Gemfile.lock"))).to be(true)
+      expect(File.exist?(File.join(gem_path, "Gemfile.lock"))).to be(true)
     end
 
     it "copies over .bundler to the gem directory" do
@@ -409,7 +409,7 @@ E
       gem_path = spec.gem_dir
       app.copy_bundler_env
       expect(File.directory?(File.join(gem_path, ".bundle"))).to be(true)
-      expect(File.exists?(File.join(gem_path, ".bundle/config"))).to be(true)
+      expect(File.exist?(File.join(gem_path, ".bundle/config"))).to be(true)
     end
     context "and the executable is symlinked to a different directory", :not_supported_on_windows do
 
@@ -449,10 +449,10 @@ E
       end
 
       let(:expected_batch_code) do
-        <<-E
-@ECHO OFF
-"%~dp0\\#{expected_ruby_relpath}" "%~dpn0" %*
-E
+        <<~E
+          @ECHO OFF
+          "%~dp0\\#{expected_ruby_relpath}" "%~dpn0" %*
+        E
       end
 
       before do
