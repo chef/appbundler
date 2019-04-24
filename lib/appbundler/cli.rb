@@ -6,54 +6,54 @@ module Appbundler
   class CLI
     include Mixlib::CLI
 
-    banner(<<-BANNER)
-* appbundler #{VERSION} *
+    banner(<<~BANNER)
+      * appbundler #{VERSION} *
 
-Usage: appbundler BUNDLE_DIR BINSTUB_DIR [GEM_NAME] [GEM_NAME] ...
+      Usage: appbundler BUNDLE_DIR BINSTUB_DIR [GEM_NAME] [GEM_NAME] ...
 
-  BUNDLE_DIR is the root directory to the bundle containing your app
-  BINSTUB_DIR is the directory where you want generated executables to be written
-  GEM_NAME is the name of a gem you want to appbundle. Default is the directory name
-           of BUNDLE_DIR (e.g. /src/chef -> chef)
+        BUNDLE_DIR is the root directory to the bundle containing your app
+        BINSTUB_DIR is the directory where you want generated executables to be written
+        GEM_NAME is the name of a gem you want to appbundle. Default is the directory name
+                 of BUNDLE_DIR (e.g. /src/chef -> chef)
 
-Your bundled application must already be gem installed.  Generated binstubs
-will point to the gem, not your working copy.
-BANNER
+      Your bundled application must already be gem installed.  Generated binstubs
+      will point to the gem, not your working copy.
+    BANNER
 
     # this is used by chef-dk, its probably not an external API, here be dragons
     option :without,
-      :long => "--without GROUPS",
-      :description => "Comma separated list of groups to exclude when building transitive Gemfile.locks (internal API)",
-      :proc => lambda { |o| o.split(/[\s,]+/) },
-      :default => []
+      long: "--without GROUPS",
+      description: "Comma separated list of groups to exclude when building transitive Gemfile.locks (internal API)",
+      proc: lambda { |o| o.split(/[\s,]+/) },
+      default: []
 
     option :binstubs_source,
-      :long => "--binstubs-source path/to/binstubs",
-      :description => "Path to binstubs within the gem to be moved into the bindir",
-      :default => nil
+      long: "--binstubs-source path/to/binstubs",
+      description: "Path to binstubs within the gem to be moved into the bindir",
+      default: nil
 
     option :extra_bin_files,
-      :long => "--extra-bin-files bin1,bin2",
-      :description => "Comma separated list of extra binstubs to wire up which are not listed in the gemspec",
-      :proc => lambda { |o| o.split(/[\s,]+/) },
-      :default => []
+      long: "--extra-bin-files bin1,bin2",
+      description: "Comma separated list of extra binstubs to wire up which are not listed in the gemspec",
+      proc: lambda { |o| o.split(/[\s,]+/) },
+      default: []
 
     option :version,
-      :short => "-v",
-      :long => "--version",
-      :description => "Show appbundler version",
-      :boolean => true,
-      :proc => lambda { |v| $stdout.puts("Appbundler Version: #{::Appbundler::VERSION}") },
-      :exit => 0
+      short: "-v",
+      long: "--version",
+      description: "Show appbundler version",
+      boolean: true,
+      proc: lambda { |v| $stdout.puts("Appbundler Version: #{::Appbundler::VERSION}") },
+      exit: 0
 
     option :help,
-      :short => "-h",
-      :long => "--help",
-      :description => "Show this message",
-      :on => :tail,
-      :boolean => true,
-      :show_options => true,
-      :exit => 0
+      short: "-h",
+      long: "--help",
+      description: "Show this message",
+      on: :tail,
+      boolean: true,
+      show_options: true,
+      exit: 0
 
     def self.run(argv)
       cli = new(argv)

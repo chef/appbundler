@@ -1,3 +1,3 @@
 module ExampleApp
-  IT_WORKS = "yes"
+  IT_WORKS = "yes".freeze
 end

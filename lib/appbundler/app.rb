@@ -86,7 +86,7 @@ module Appbundler
     # of our appbundle calls.  But to ship ChefDK 2.0 we just do this.
     SHITLIST = [
       "github_changelog_generator",
-    ]
+    ].freeze
 
     # This is a check which is equivalent to asking if we are running 2-arg or 3-arg.  If
     # we have an "external_lockfile" that means the chef-dk omnibus Gemfile.lock, e.g.:
@@ -111,11 +111,11 @@ module Appbundler
     #
     def local_gemfile_lock_specs
       gemfile_lock_specs.map do |s|
-        #if SHITLIST.include?(s.name)
+        # if SHITLIST.include?(s.name)
         #  nil
-        #else
-          safe_resolve_local_gem(s)
-        #end
+        # else
+        safe_resolve_local_gem(s)
+        # end
       end.compact
     end
 
@@ -129,7 +129,7 @@ module Appbundler
       gem_path = installed_spec.gem_dir
       # If we're already using that directory, don't copy (it won't work anyway)
       return if gem_path == File.dirname(gemfile_lock)
-      FileUtils.install(gemfile_lock, gem_path, :mode => 0644)
+      FileUtils.install(gemfile_lock, gem_path, mode: 0644)
       if File.exist?(dot_bundle_dir) && File.directory?(dot_bundle_dir)
         FileUtils.cp_r(dot_bundle_dir, gem_path)
         FileUtils.chmod_R("ugo+rX", File.join(gem_path, ".bundle"))
@@ -165,7 +165,7 @@ module Appbundler
         locked_gems = {}
 
         gemfile_lock_specs.each do |s|
-          #next if SHITLIST.include?(s.name)
+          # next if SHITLIST.include?(s.name)
           spec = safe_resolve_local_gem(s)
           next if spec.nil?
 
@@ -207,7 +207,7 @@ module Appbundler
         end
 
         t.close
-        puts IO.read(t.path)  # debugging
+        puts IO.read(t.path) # debugging
         Dir.chdir(app_dir) do
           FileUtils.rm_f "#{app_dir}/Gemfile.lock"
           Bundler.with_clean_env do
@@ -218,7 +218,7 @@ module Appbundler
           FileUtils.mv t.path, "#{app_dir}/Gemfile"
         end
       end
-      return "#{app_dir}/Gemfile"
+      "#{app_dir}/Gemfile"
     end
 
     def write_executable_stubs
@@ -257,10 +257,10 @@ module Appbundler
 
     def batchfile_stub
       ruby_relpath_windows = ruby_relative_path.tr("/", '\\')
-      <<-E
-@ECHO OFF
-"%~dp0\\#{ruby_relpath_windows}" "%~dpn0" %*
-E
+      <<~E
+        @ECHO OFF
+        "%~dp0\\#{ruby_relpath_windows}" "%~dpn0" %*
+      E
     end
 
     # Relative path from #target_bin_dir to #ruby. This is used to
@@ -298,24 +298,24 @@ E
     # APPBUNDLER_ALLOW_RVM environment variable to "true". This feature
     # exists to make tests run correctly on travis.ci (which uses rvm).
     def env_sanitizer
-      <<-EOS
-require "rubygems"
+      <<~EOS
+        require "rubygems"
 
-begin
-  # this works around rubygems/rubygems#2196 and can be removed in rubygems > 2.7.6
-  require "rubygems/bundler_version_finder"
-rescue LoadError
-  # probably means rubygems is too old or too new to have this class, and we don't care
-end
+        begin
+          # this works around rubygems/rubygems#2196 and can be removed in rubygems > 2.7.6
+          require "rubygems/bundler_version_finder"
+        rescue LoadError
+          # probably means rubygems is too old or too new to have this class, and we don't care
+        end
 
-# avoid appbundling if we are definitely running within a Bundler bundle.
-# most likely the check for defined?(Bundler) is enough since we don't require
-# bundler above, but just for paranoia's sake also we test to see if Bundler is
-# really doing its thing or not.
-unless defined?(Bundler) && Bundler.instance_variable_defined?("@load")
-  ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"
-  ::Gem.clear_paths
-EOS
+        # avoid appbundling if we are definitely running within a Bundler bundle.
+        # most likely the check for defined?(Bundler) is enough since we don't require
+        # bundler above, but just for paranoia's sake also we test to see if Bundler is
+        # really doing its thing or not.
+        unless defined?(Bundler) && Bundler.instance_variable_defined?("@load")
+          ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"
+          ::Gem.clear_paths
+      EOS
     end
 
     def runtime_activate
@@ -335,17 +335,17 @@ EOS
     def load_statement_for(bin_file)
       name, version = app_spec.name, app_spec.version
       bin_basename = File.basename(bin_file)
-      <<-E
-  gem "#{name}", "= #{version}"
-  spec = Gem::Specification.find_by_name("#{name}", "= #{version}")
-else
-  spec = Gem::Specification.find_by_name("#{name}")
-end
+      <<~E
+          gem "#{name}", "= #{version}"
+          spec = Gem::Specification.find_by_name("#{name}", "= #{version}")
+        else
+          spec = Gem::Specification.find_by_name("#{name}")
+        end
 
-bin_file = spec.bin_file("#{bin_basename}")
+        bin_file = spec.bin_file("#{bin_basename}")
 
-Kernel.load(bin_file)
-E
+        Kernel.load(bin_file)
+      E
     end
 
     def executables
@@ -423,12 +423,12 @@ E
       inaccessable_gems = inaccessable_git_sourced_gems
       return true if inaccessable_gems.empty?
 
-      message = <<-MESSAGE
-Application '#{name}' contains gems in the lockfile which are
-not accessible by rubygems. This usually occurs when you fetch gems from git in
-your Gemfile and do not install the same version of the gems beforehand.
+      message = <<~MESSAGE
+        Application '#{name}' contains gems in the lockfile which are
+        not accessible by rubygems. This usually occurs when you fetch gems from git in
+        your Gemfile and do not install the same version of the gems beforehand.
 
-MESSAGE
+      MESSAGE
 
       message << "The Gemfile.lock is located here:\n- #{gemfile_lock}\n\n"
 
