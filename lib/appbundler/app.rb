@@ -136,6 +136,16 @@ module Appbundler
       end
     end
 
+    # This is used to copy the binstubs from the binstub source directory to the actual
+    # binstub location.
+    #
+    def copy_binstubs(binstubs_source)
+      gem_path = installed_spec.gem_dir
+      dst = "#{gem_path}/bin"
+      src = "#{gem_path}/#{binstubs_source}/*"
+      FileUtils.cp_r(Dir.glob(src), dst)
+    end
+
     # This is the implementation of the 3-arg version of writing the merged lockfiles,
     # when called with the 2-arg version it short-circuits, however, to the copy_bundler_env
     # version above.

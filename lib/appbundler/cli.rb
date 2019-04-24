@@ -27,6 +27,11 @@ BANNER
       :proc => lambda { |o| o.split(/[\s,]+/) },
       :default => []
 
+    option :binstubs_source,
+      :long => "--binstubs-source path/to/binstubs",
+      :description => "Path to binstubs within the gem to be moved into the bindir",
+      :default => nil
+
     option :extra_bin_files,
       :long => "--extra-bin-files bin1,bin2",
       :description => "Comma separated list of extra binstubs to wire up which are not listed in the gemspec",
@@ -111,6 +116,10 @@ BANNER
         end
         created_lockfile = app.write_merged_lockfiles(without: config[:without])
         $stdout.puts "Generated merged lockfile at #{created_lockfile}" if created_lockfile
+        if config[:binstubs_source]
+          app.copy_binstubs(config[:binstubs_source])
+          $stdout.puts "Copied binstubs"
+        end
       end
     end
 
