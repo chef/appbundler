@@ -17,10 +17,9 @@ module Appbundler
     attr_reader :bundle_path
     attr_reader :target_bin_dir
     attr_reader :name
-    attr_reader :extra_bin_files
 
-    # The bundle_path is always the path to the directory containing the Gemfile.lock
-    # being used, e.g.  /var/cache/omnibus/src/chef/chefor whatever.  If
+    # The bundle_path is always the path to the Gemfile.lock being used, e.g.
+    # /var/cache/omnibus/src/chef/chef-14.10.9/Gemfile.lock or whatever.  If
     # the name if the gem is not set then we behave like old style 2-arg appbundling
     # where the gem we are appbundling is in the gemspec in that directory.
     #
@@ -31,11 +30,10 @@ module Appbundler
     # @param bundle_path [String] the directory path of the Gemfile.lock
     # @param target_bin_dir [String] the binstub dir, e.g. /opt/chefdk/bin
     # @param name [String] name of the gem
-    def initialize(bundle_path, target_bin_dir, name, extra_bin_files = [])
+    def initialize(bundle_path, target_bin_dir, name)
       @bundle_path = bundle_path
       @target_bin_dir = target_bin_dir
       @name = name
-      @extra_bin_files = extra_bin_files
     end
 
     # For the 2-arg version this is the gemfile in the omnibus build directory:
@@ -134,16 +132,6 @@ module Appbundler
         FileUtils.cp_r(dot_bundle_dir, gem_path)
         FileUtils.chmod_R("ugo+rX", File.join(gem_path, ".bundle"))
       end
-    end
-
-    # This is used to copy the binstubs from the binstub source directory to the actual
-    # binstub location.
-    #
-    def copy_binstubs(binstubs_source)
-      gem_path = installed_spec.gem_dir
-      dst = "#{gem_path}/bin"
-      src = File.join(bundle_path, binstubs_source, "*")
-      FileUtils.cp_r(Dir.glob(src), dst)
     end
 
     # This is the implementation of the 3-arg version of writing the merged lockfiles,
@@ -349,7 +337,8 @@ module Appbundler
     end
 
     def executables
-      installed_spec.executables.map { |e| installed_spec.bin_file(e) } + extra_bin_files
+      spec = installed_spec
+      spec.executables.map { |e| spec.bin_file(e) }
     end
 
     def runtime_dep_specs

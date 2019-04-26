@@ -27,17 +27,6 @@ module Appbundler
       proc: lambda { |o| o.split(/[\s,]+/) },
       default: []
 
-    option :binstubs_source,
-      long: "--binstubs-source path/to/binstubs",
-      description: "Path to binstubs within the gem to be moved into the bindir",
-      default: nil
-
-    option :extra_bin_files,
-      long: "--extra-bin-files bin1,bin2",
-      description: "Comma separated list of extra binstubs to wire up which are not listed in the gemspec",
-      proc: lambda { |o| o.split(/[\s,]+/) },
-      default: []
-
     option :version,
       short: "-v",
       long: "--version",
@@ -109,17 +98,13 @@ module Appbundler
 
     def run
       gems.each do |g|
-        app = App.new(bundle_path, bin_path, g, config[:extra_bin_files])
+        app = App.new(bundle_path, bin_path, g)
         created_stubs = app.write_executable_stubs
         created_stubs.each do |real_executable_path, stub_path|
           $stdout.puts "Generated binstub #{stub_path} => #{real_executable_path}"
         end
         created_lockfile = app.write_merged_lockfiles(without: config[:without])
         $stdout.puts "Generated merged lockfile at #{created_lockfile}" if created_lockfile
-        if config[:binstubs_source]
-          app.copy_binstubs(config[:binstubs_source])
-          $stdout.puts "Copied binstubs"
-        end
       end
     end
 
