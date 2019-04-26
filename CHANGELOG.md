@@ -2,10 +2,18 @@
 
 This file is used to document the changes between releases of Appbundler
 
-<!-- latest_release -->
+<!-- latest_release 0.12.6 -->
+## [v0.12.6](https://github.com/chef/appbundler/tree/v0.12.6) (2019-04-26)
+
+#### Merged Pull Requests
+- revert the --binstubs-source and --extra-bin-flags [#55](https://github.com/chef/appbundler/pull/55) ([lamont-granquist](https://github.com/lamont-granquist))
 <!-- latest_release -->
 
-<!-- release_rollup -->
+<!-- release_rollup since=0.12.5 -->
+### Changes not yet released to rubygems.org
+
+#### Merged Pull Requests
+- revert the --binstubs-source and --extra-bin-flags [#55](https://github.com/chef/appbundler/pull/55) ([lamont-granquist](https://github.com/lamont-granquist)) <!-- 0.12.6 -->
 <!-- release_rollup -->
 
 <!-- latest_stable_release -->
