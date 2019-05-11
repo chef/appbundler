@@ -330,6 +330,11 @@ module Appbundler
           spec = Gem::Specification.find_by_name("#{name}")
         end
 
+        unless Gem::Specification.unresolved_deps.empty?
+          $stderr.puts "APPBUNDLER WARNING: unresolved deps are CRITICAL performance bug, this MUST be fixed"
+          Gem::Specification.reset
+        end
+
         bin_file = spec.bin_file("#{bin_basename}")
 
         Kernel.load(bin_file)
