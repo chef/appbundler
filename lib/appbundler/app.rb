@@ -325,6 +325,7 @@ module Appbundler
       bin_basename = File.basename(bin_file)
       <<~E
           gem "#{name}", "= #{version}"
+          gem "bundler" # force activation of bundler to avoid unresolved specs if there are multiple bundler versions
           spec = Gem::Specification.find_by_name("#{name}", "= #{version}")
         else
           spec = Gem::Specification.find_by_name("#{name}")
