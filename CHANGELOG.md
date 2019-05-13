@@ -2,17 +2,18 @@
 
 This file is used to document the changes between releases of Appbundler
 
-<!-- latest_release 0.12.7 -->
-## [v0.12.7](https://github.com/chef/appbundler/tree/v0.12.7) (2019-05-11)
+<!-- latest_release 0.12.8 -->
+## [v0.12.8](https://github.com/chef/appbundler/tree/v0.12.8) (2019-05-13)
 
 #### Merged Pull Requests
-- Warn on unresolved specs [#56](https://github.com/chef/appbundler/pull/56) ([lamont-granquist](https://github.com/lamont-granquist))
+- force bundler activation [#57](https://github.com/chef/appbundler/pull/57) ([lamont-granquist](https://github.com/lamont-granquist))
 <!-- latest_release -->
 
 <!-- release_rollup since=0.12.5 -->
 ### Changes not yet released to rubygems.org
 
 #### Merged Pull Requests
+- force bundler activation [#57](https://github.com/chef/appbundler/pull/57) ([lamont-granquist](https://github.com/lamont-granquist)) <!-- 0.12.8 -->
 - Warn on unresolved specs [#56](https://github.com/chef/appbundler/pull/56) ([lamont-granquist](https://github.com/lamont-granquist)) <!-- 0.12.7 -->
 - revert the --binstubs-source and --extra-bin-flags [#55](https://github.com/chef/appbundler/pull/55) ([lamont-granquist](https://github.com/lamont-granquist)) <!-- 0.12.6 -->
 <!-- release_rollup -->
