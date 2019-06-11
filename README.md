@@ -1,6 +1,7 @@
 # Appbundler
 
-[![Build Status Master](https://travis-ci.org/chef/appbundler.svg?branch=master)](https://travis-ci.org/chef/appbundler) [![Gem Version](https://badge.fury.io/rb/appbundler.svg)](https://badge.fury.io/rb/appbundler)
+[![Build Status](https://badge.buildkite.com/c845b7b7b802cb94200cc37bca92eb5c1bad9fbb28d397ea08.svg)](https://buildkite.com/chef-oss/chef-appbundler-master-verify)
+[![Gem Version](https://badge.fury.io/rb/appbundler.svg)](https://badge.fury.io/rb/appbundler)
 
 **Umbrella Project**: [Chef Foundation](https://github.com/chef/chef-oss-practices/blob/master/projects/chef-foundation.md)
 
