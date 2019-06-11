@@ -101,20 +101,42 @@ describe Appbundler do
     it "locks the main app's gem via rubygems, and loads the proper binary" do
       expected_loading_code = <<~CODE
         gem "app", "= 1.0.0"
-
+        gem "bundler" # force activation of bundler to avoid unresolved specs if there are multiple bundler versions
         spec = Gem::Specification.find_by_name("app", "= 1.0.0")
-        bin_file = spec.bin_file("foo")
+      else
+        spec = Gem::Specification.find_by_name("app")
+      end
 
-        Kernel.load(bin_file)
+      unless Gem::Specification.unresolved_deps.empty?
+        $stderr.puts "APPBUNDLER WARNING: unresolved deps are CRITICAL performance bug, this MUST be fixed"
+        Gem::Specification.reset
+      end
+
+      bin_file = spec.bin_file("foo")
+
+      Kernel.load(bin_file)
       CODE
       expect(app.load_statement_for(bin_path)).to eq(expected_loading_code)
     end
 
     it "generates code to override GEM_HOME and GEM_PATH (e.g., rvm)" do
       expected = <<~EOS
-        ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"
         require "rubygems"
-        ::Gem.clear_paths
+
+        begin
+          # this works around rubygems/rubygems#2196 and can be removed in rubygems > 2.7.6
+          require "rubygems/bundler_version_finder"
+        rescue LoadError
+          # probably means rubygems is too old or too new to have this class, and we don't care
+        end
+
+        # avoid appbundling if we are definitely running within a Bundler bundle.
+        # most likely the check for defined?(Bundler) is enough since we don't require
+        # bundler above, but just for paranoia's sake also we test to see if Bundler is
+        # really doing its thing or not.
+        unless defined?(Bundler) && Bundler.instance_variable_defined?("@load")
+          ENV["GEM_HOME"] = ENV["GEM_PATH"] = nil unless ENV["APPBUNDLER_ALLOW_RVM"] == "true"
+          ::Gem.clear_paths
       EOS
 
       expect(app.env_sanitizer).to eq(expected)
