@@ -2,17 +2,18 @@
 
 This file is used to document the changes between releases of Appbundler
 
-<!-- latest_release 0.13.0 -->
-## [0.13.0](https://github.com/chef/appbundler/tree/0.13.0) (2019-06-11)
+<!-- latest_release 0.13.1 -->
+## [0.13.1](https://github.com/chef/appbundler/tree/0.13.1) (2019-07-10)
 
 #### Merged Pull Requests
-- Require Ruby 2.4+, Swap Travis for Buildkite, slim the gem size, use standard license file location [#59](https://github.com/chef/appbundler/pull/59) ([tas50](https://github.com/tas50))
+- Don&#39;t ship readme / hidden files in the artifact [#60](https://github.com/chef/appbundler/pull/60) ([tas50](https://github.com/tas50))
 <!-- latest_release -->
 
 <!-- release_rollup since=0.12.5 -->
 ### Changes not yet released to rubygems.org
 
 #### Merged Pull Requests
+- Don&#39;t ship readme / hidden files in the artifact [#60](https://github.com/chef/appbundler/pull/60) ([tas50](https://github.com/tas50)) <!-- 0.13.1 -->
 - Require Ruby 2.4+, Swap Travis for Buildkite, slim the gem size, use standard license file location [#59](https://github.com/chef/appbundler/pull/59) ([tas50](https://github.com/tas50)) <!-- 0.13.0 -->
 - Standardize rakefile/gemfile and add a Buildkite PR pipeline [#58](https://github.com/chef/appbundler/pull/58) ([tas50](https://github.com/tas50)) <!-- 0.12.9 -->
 - force bundler activation [#57](https://github.com/chef/appbundler/pull/57) ([lamont-granquist](https://github.com/lamont-granquist)) <!-- 0.12.8 -->
