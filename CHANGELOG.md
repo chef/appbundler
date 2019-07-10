@@ -2,31 +2,28 @@
 
 This file is used to document the changes between releases of Appbundler
 
-<!-- latest_release 0.13.1 -->
-## [0.13.1](https://github.com/chef/appbundler/tree/0.13.1) (2019-07-10)
-
-#### Merged Pull Requests
-- Don&#39;t ship readme / hidden files in the artifact [#60](https://github.com/chef/appbundler/pull/60) ([tas50](https://github.com/tas50))
+<!-- latest_release -->
 <!-- latest_release -->
 
-<!-- release_rollup since=0.12.5 -->
-### Changes not yet released to rubygems.org
-
-#### Merged Pull Requests
-- Don&#39;t ship readme / hidden files in the artifact [#60](https://github.com/chef/appbundler/pull/60) ([tas50](https://github.com/tas50)) <!-- 0.13.1 -->
-- Require Ruby 2.4+, Swap Travis for Buildkite, slim the gem size, use standard license file location [#59](https://github.com/chef/appbundler/pull/59) ([tas50](https://github.com/tas50)) <!-- 0.13.0 -->
-- Standardize rakefile/gemfile and add a Buildkite PR pipeline [#58](https://github.com/chef/appbundler/pull/58) ([tas50](https://github.com/tas50)) <!-- 0.12.9 -->
-- force bundler activation [#57](https://github.com/chef/appbundler/pull/57) ([lamont-granquist](https://github.com/lamont-granquist)) <!-- 0.12.8 -->
-- Warn on unresolved specs [#56](https://github.com/chef/appbundler/pull/56) ([lamont-granquist](https://github.com/lamont-granquist)) <!-- 0.12.7 -->
-- revert the --binstubs-source and --extra-bin-flags [#55](https://github.com/chef/appbundler/pull/55) ([lamont-granquist](https://github.com/lamont-granquist)) <!-- 0.12.6 -->
+<!-- release_rollup -->
 <!-- release_rollup -->
 
 <!-- latest_stable_release -->
+## [0.13.1](https://github.com/chef/appbundler/tree/0.13.1) (2019-07-10)
+
+#### Merged Pull Requests
+- revert the --binstubs-source and --extra-bin-flags [#55](https://github.com/chef/appbundler/pull/55) ([lamont-granquist](https://github.com/lamont-granquist))
+- Warn on unresolved specs [#56](https://github.com/chef/appbundler/pull/56) ([lamont-granquist](https://github.com/lamont-granquist))
+- force bundler activation [#57](https://github.com/chef/appbundler/pull/57) ([lamont-granquist](https://github.com/lamont-granquist))
+- Standardize rakefile/gemfile and add a Buildkite PR pipeline [#58](https://github.com/chef/appbundler/pull/58) ([tas50](https://github.com/tas50))
+- Require Ruby 2.4+, Swap Travis for Buildkite, slim the gem size, use standard license file location [#59](https://github.com/chef/appbundler/pull/59) ([tas50](https://github.com/tas50))
+- Don&#39;t ship readme / hidden files in the artifact [#60](https://github.com/chef/appbundler/pull/60) ([tas50](https://github.com/tas50))
+<!-- latest_stable_release -->
+
 ## [v0.12.5](https://github.com/chef/appbundler/tree/v0.12.5) (2019-04-24)
 
 #### Merged Pull Requests
 - Pull binstubs from the app dir instead of gem dir [#54](https://github.com/chef/appbundler/pull/54) ([lamont-granquist](https://github.com/lamont-granquist))
-<!-- latest_stable_release -->
 
 ## [v0.12.4](https://github.com/chef/appbundler/tree/v0.12.4) (2019-04-24)
 
