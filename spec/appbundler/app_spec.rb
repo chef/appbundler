@@ -100,21 +100,18 @@ describe Appbundler do
 
     it "locks the main app's gem via rubygems, and loads the proper binary" do
       expected_loading_code = <<~CODE
-        gem "app", "= 1.0.0"
-        gem "bundler" # force activation of bundler to avoid unresolved specs if there are multiple bundler versions
-        spec = Gem::Specification.find_by_name("app", "= 1.0.0")
-      else
-        spec = Gem::Specification.find_by_name("app")
-      end
-
-      unless Gem::Specification.unresolved_deps.empty?
-        $stderr.puts "APPBUNDLER WARNING: unresolved deps are CRITICAL performance bug, this MUST be fixed"
-        Gem::Specification.reset
-      end
-
-      bin_file = spec.bin_file("foo")
-
-      Kernel.load(bin_file)
+          gem "app", "= 1.0.0"
+          gem "bundler" # force activation of bundler to avoid unresolved specs if there are multiple bundler versions
+          spec = Gem::Specification.find_by_name("app", "= 1.0.0")
+        else
+          spec = Gem::Specification.find_by_name("app")
+        end
+         unless Gem::Specification.unresolved_deps.empty?
+          $stderr.puts "APPBUNDLER WARNING: unresolved deps are CRITICAL performance bug, this MUST be fixed"
+          Gem::Specification.reset
+        end
+         bin_file = spec.bin_file("foo")
+         Kernel.load(bin_file)
       CODE
       expect(app.load_statement_for(bin_path)).to eq(expected_loading_code)
     end
