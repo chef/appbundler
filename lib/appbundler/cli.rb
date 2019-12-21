@@ -1,5 +1,5 @@
-require "appbundler/version"
-require "appbundler/app"
+require_relative "version"
+require_relative "app"
 require "mixlib/cli"
 
 module Appbundler
