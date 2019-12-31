@@ -2,10 +2,18 @@
 
 This file is used to document the changes between releases of Appbundler
 
-<!-- latest_release -->
+<!-- latest_release 0.13.2 -->
+## [v0.13.2](https://github.com/chef/appbundler/tree/v0.13.2) (2019-12-31)
+
+#### Merged Pull Requests
+- Substitute require for require_relative [#61](https://github.com/chef/appbundler/pull/61) ([tas50](https://github.com/tas50))
 <!-- latest_release -->
 
-<!-- release_rollup -->
+<!-- release_rollup since=0.13.1 -->
+### Changes not yet released to rubygems.org
+
+#### Merged Pull Requests
+- Substitute require for require_relative [#61](https://github.com/chef/appbundler/pull/61) ([tas50](https://github.com/tas50)) <!-- 0.13.2 -->
 <!-- release_rollup -->
 
 <!-- latest_stable_release -->
