@@ -2,21 +2,19 @@
 
 This file is used to document the changes between releases of Appbundler
 
-<!-- latest_release 0.13.2 -->
-## [v0.13.2](https://github.com/chef/appbundler/tree/v0.13.2) (2019-12-31)
-
-#### Merged Pull Requests
-- Substitute require for require_relative [#61](https://github.com/chef/appbundler/pull/61) ([tas50](https://github.com/tas50))
+<!-- latest_release -->
 <!-- latest_release -->
 
-<!-- release_rollup since=0.13.1 -->
-### Changes not yet released to rubygems.org
-
-#### Merged Pull Requests
-- Substitute require for require_relative [#61](https://github.com/chef/appbundler/pull/61) ([tas50](https://github.com/tas50)) <!-- 0.13.2 -->
+<!-- release_rollup -->
 <!-- release_rollup -->
 
 <!-- latest_stable_release -->
+## [v0.13.2](https://github.com/chef/appbundler/tree/v0.13.2) (2020-02-12)
+
+#### Merged Pull Requests
+- Substitute require for require_relative [#61](https://github.com/chef/appbundler/pull/61) ([tas50](https://github.com/tas50))
+<!-- latest_stable_release -->
+
 ## [0.13.1](https://github.com/chef/appbundler/tree/0.13.1) (2019-07-10)
 
 #### Merged Pull Requests
@@ -26,7 +24,6 @@ This file is used to document the changes between releases of Appbundler
 - Standardize rakefile/gemfile and add a Buildkite PR pipeline [#58](https://github.com/chef/appbundler/pull/58) ([tas50](https://github.com/tas50))
 - Require Ruby 2.4+, Swap Travis for Buildkite, slim the gem size, use standard license file location [#59](https://github.com/chef/appbundler/pull/59) ([tas50](https://github.com/tas50))
 - Don&#39;t ship readme / hidden files in the artifact [#60](https://github.com/chef/appbundler/pull/60) ([tas50](https://github.com/tas50))
-<!-- latest_stable_release -->
 
 ## [v0.12.5](https://github.com/chef/appbundler/tree/v0.12.5) (2019-04-24)
 
