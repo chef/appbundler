@@ -1,7 +1,7 @@
 require "spec_helper"
-require "tmpdir"
-require "fileutils"
-require "mixlib/shellout"
+require "tmpdir" unless defined?(Dir.mktmpdir)
+require "fileutils" unless defined?(FileUtils)
+require "mixlib/shellout" unless defined?(Mixlib::ShellOut)
 require "appbundler/app"
 
 describe Appbundler do
@@ -26,7 +26,7 @@ describe Appbundler do
   end
 
   def target_bindir
-    File.expand_path("../../test-tmp/bin", __FILE__)
+    File.expand_path('../test-tmp/bin', __dir__)
   end
 
   context "given an app with multiple levels of dependencies" do
@@ -207,7 +207,7 @@ describe Appbundler do
   end
 
   context "when created with the example application" do
-    FIXTURES_PATH = File.expand_path("../../fixtures/", __FILE__).freeze
+    FIXTURES_PATH = File.expand_path('../fixtures', __dir__).freeze
 
     APP_ROOT = File.join(FIXTURES_PATH, "appbundler-example-app").freeze
 

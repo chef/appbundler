@@ -1,8 +1,8 @@
 require "bundler"
-require "fileutils"
-require "mixlib/shellout"
-require "tempfile"
-require "pp"
+require "fileutils" unless defined?(FileUtils)
+require "mixlib/shellout" unless defined?(Mixlib::ShellOut)
+require "tempfile" unless defined?(Tempfile)
+require "pp" unless defined?(PP)
 
 module Appbundler
 

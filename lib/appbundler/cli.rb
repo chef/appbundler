@@ -1,6 +1,6 @@
 require_relative "version"
 require_relative "app"
-require "mixlib/cli"
+require "mixlib/cli" unless defined?(Mixlib::CLI)
 
 module Appbundler
   class CLI
