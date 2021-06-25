@@ -2,10 +2,18 @@
 
 This file is used to document the changes between releases of Appbundler
 
-<!-- latest_release -->
+<!-- latest_release 0.13.3 -->
+## [v0.13.3](https://github.com/chef/appbundler/tree/v0.13.3) (2021-06-25)
+
+#### Merged Pull Requests
+- Upgrade to GitHub-native Dependabot [#64](https://github.com/chef/appbundler/pull/64) ([dependabot-preview[bot]](https://github.com/dependabot-preview[bot]))
 <!-- latest_release -->
 
-<!-- release_rollup -->
+<!-- release_rollup since=0.13.2 -->
+### Changes not yet released to rubygems.org
+
+#### Merged Pull Requests
+- Upgrade to GitHub-native Dependabot [#64](https://github.com/chef/appbundler/pull/64) ([dependabot-preview[bot]](https://github.com/dependabot-preview[bot])) <!-- 0.13.3 -->
 <!-- release_rollup -->
 
 <!-- latest_stable_release -->
