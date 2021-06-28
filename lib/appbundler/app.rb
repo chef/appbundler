@@ -289,6 +289,12 @@ module Appbundler
       <<~EOS
         require "rubygems"
 
+        # this works around OpenSSL FIPS fingerprint matching issue where
+        # it expects to be loaded in image base known at compile time. We
+        # load OpenSSL early so that the shared library gets loaded in its
+        # preferred image base address
+        require "openssl"
+
         begin
           # this works around rubygems/rubygems#2196 and can be removed in rubygems > 2.7.6
           require "rubygems/bundler_version_finder"
