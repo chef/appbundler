@@ -2,27 +2,24 @@
 
 This file is used to document the changes between releases of Appbundler
 
-<!-- latest_release 0.13.4 -->
-## [v0.13.4](https://github.com/chef/appbundler/tree/v0.13.4) (2021-06-30)
-
-#### Merged Pull Requests
-- Changes for require openssl ahead of time to avoid fingerprint mismatch… [#66](https://github.com/chef/appbundler/pull/66) ([msys-sgarg](https://github.com/msys-sgarg))
+<!-- latest_release -->
 <!-- latest_release -->
 
-<!-- release_rollup since=0.13.2 -->
-### Changes not yet released to rubygems.org
-
-#### Merged Pull Requests
-- Changes for require openssl ahead of time to avoid fingerprint mismatch… [#66](https://github.com/chef/appbundler/pull/66) ([msys-sgarg](https://github.com/msys-sgarg)) <!-- 0.13.4 -->
-- Upgrade to GitHub-native Dependabot [#64](https://github.com/chef/appbundler/pull/64) ([dependabot-preview[bot]](https://github.com/dependabot-preview[bot])) <!-- 0.13.3 -->
+<!-- release_rollup -->
 <!-- release_rollup -->
 
 <!-- latest_stable_release -->
+## [v0.13.4](https://github.com/chef/appbundler/tree/v0.13.4) (2021-06-30)
+
+#### Merged Pull Requests
+- Upgrade to GitHub-native Dependabot [#64](https://github.com/chef/appbundler/pull/64) ([dependabot-preview[bot]](https://github.com/dependabot-preview[bot]))
+- Changes for require openssl ahead of time to avoid fingerprint mismatch… [#66](https://github.com/chef/appbundler/pull/66) ([msys-sgarg](https://github.com/msys-sgarg))
+<!-- latest_stable_release -->
+
 ## [v0.13.2](https://github.com/chef/appbundler/tree/v0.13.2) (2020-02-12)
 
 #### Merged Pull Requests
 - Substitute require for require_relative [#61](https://github.com/chef/appbundler/pull/61) ([tas50](https://github.com/tas50))
-<!-- latest_stable_release -->
 
 ## [0.13.1](https://github.com/chef/appbundler/tree/0.13.1) (2019-07-10)
 
