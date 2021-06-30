@@ -2,12 +2,6 @@ source "https://rubygems.org"
 
 gemspec
 
-group :docs do
-  gem "yard"
-  gem "redcarpet"
-  gem "github-markup"
-end
-
 group :test do
   gem "chefstyle"
   gem "rspec", "~> 3.0"
@@ -21,8 +15,7 @@ group :debug do
   gem "rb-readline"
 end
 
-instance_eval(ENV["GEMFILE_MOD"]) if ENV["GEMFILE_MOD"]
-
-# If you want to load debugging tools into the bundle exec sandbox,
-# add these additional dependencies into Gemfile.local
-eval_gemfile(__FILE__ + ".local") if File.exist?(__FILE__ + ".local")
+if Gem.ruby_version.to_s.start_with?("2.5")
+  # 16.7.23 required ruby 2.6+
+  gem "chef-utils", "< 16.7.23" # TODO: remove when we drop ruby 2.5
+end
