@@ -2,17 +2,18 @@
 
 This file is used to document the changes between releases of Appbundler
 
-<!-- latest_release 0.13.3 -->
-## [v0.13.3](https://github.com/chef/appbundler/tree/v0.13.3) (2021-06-25)
+<!-- latest_release 0.13.4 -->
+## [v0.13.4](https://github.com/chef/appbundler/tree/v0.13.4) (2021-06-30)
 
 #### Merged Pull Requests
-- Upgrade to GitHub-native Dependabot [#64](https://github.com/chef/appbundler/pull/64) ([dependabot-preview[bot]](https://github.com/dependabot-preview[bot]))
+- Changes for require openssl ahead of time to avoid fingerprint mismatch… [#66](https://github.com/chef/appbundler/pull/66) ([msys-sgarg](https://github.com/msys-sgarg))
 <!-- latest_release -->
 
 <!-- release_rollup since=0.13.2 -->
 ### Changes not yet released to rubygems.org
 
 #### Merged Pull Requests
+- Changes for require openssl ahead of time to avoid fingerprint mismatch… [#66](https://github.com/chef/appbundler/pull/66) ([msys-sgarg](https://github.com/msys-sgarg)) <!-- 0.13.4 -->
 - Upgrade to GitHub-native Dependabot [#64](https://github.com/chef/appbundler/pull/64) ([dependabot-preview[bot]](https://github.com/dependabot-preview[bot])) <!-- 0.13.3 -->
 <!-- release_rollup -->
 
