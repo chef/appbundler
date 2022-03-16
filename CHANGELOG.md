@@ -2,10 +2,18 @@
 
 This file is used to document the changes between releases of Appbundler
 
-<!-- latest_release -->
+<!-- latest_release 0.13.5 -->
+## [v0.13.5](https://github.com/chef/appbundler/tree/v0.13.5) (2022-03-16)
+
+#### Merged Pull Requests
+- IPACK-54 Update Ruby versions in verify pipeline [#69](https://github.com/chef/appbundler/pull/69) ([Shastine-Mosley](https://github.com/Shastine-Mosley))
 <!-- latest_release -->
 
-<!-- release_rollup -->
+<!-- release_rollup since=0.13.4 -->
+### Changes not yet released to rubygems.org
+
+#### Merged Pull Requests
+- IPACK-54 Update Ruby versions in verify pipeline [#69](https://github.com/chef/appbundler/pull/69) ([Shastine-Mosley](https://github.com/Shastine-Mosley)) <!-- 0.13.5 -->
 <!-- release_rollup -->
 
 <!-- latest_stable_release -->
