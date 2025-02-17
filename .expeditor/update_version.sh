@@ -8,5 +8,9 @@ set -evx
 
 sed -i -r "s/^(\s*)VERSION = \".+\"/\1VERSION = \"$(cat VERSION)\"/" lib/appbundler/version.rb
 
+gem install rubygems-update
+update_rubygems
+gem update --system
+
 # Once Expeditor finshes executing this script, it will commit the changes and push
 # the commit as a new tag corresponding to the value in the VERSION file.

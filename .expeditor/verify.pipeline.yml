@@ -2,6 +2,9 @@ steps:
 
 - label: run-lint-and-specs-ruby-3.0
   command:
+    - gem install rubygems-update
+    - update_rubygems
+    - gem update --system
     - bundle config set --local without docs debug
     - bundle install --jobs=7 --retry=3
     - bundle exec rake
