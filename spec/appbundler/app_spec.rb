@@ -66,7 +66,7 @@ describe Appbundler do
       Appbundler::App.new(app_root, target_bindir, File.basename(app_root))
     end
 
-    binding.pry
+    # binding.pry
 
     before do
       allow(app).to receive(:gemfile_lock_specs).and_return(all_specs)
@@ -220,7 +220,7 @@ describe Appbundler do
   context "when created with the example application" do
 
 
-    binding.pry
+    # binding.pry
     FIXTURES_PATH = File.expand_path("../../fixtures/", __FILE__).freeze
 
     APP_ROOT = File.join(FIXTURES_PATH, "appbundler-example-app").freeze
