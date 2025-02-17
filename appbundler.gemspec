@@ -18,8 +18,8 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
-  spec.required_ruby_version = ">= 2.4"
+  spec.required_ruby_version = ">= 3.0"
 
-  spec.add_dependency "mixlib-shellout", ">= 2.0", "< 4.0"
-  spec.add_dependency "mixlib-cli", ">= 1.4", "< 3.0"
+  spec.add_dependency "mixlib-shellout", "~> 3.3.6"
+  spec.add_dependency "mixlib-cli", "~> 2.1.2"
 end

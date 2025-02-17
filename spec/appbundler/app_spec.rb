@@ -4,6 +4,9 @@ require "fileutils"
 require "mixlib/shellout"
 require "appbundler/app"
 
+    require "pry"
+    require 'pry-nav'
+
 describe Appbundler do
 
   def all_specs
@@ -62,6 +65,8 @@ describe Appbundler do
     let(:app) do
       Appbundler::App.new(app_root, target_bindir, File.basename(app_root))
     end
+
+    binding.pry
 
     before do
       allow(app).to receive(:gemfile_lock_specs).and_return(all_specs)
@@ -213,6 +218,9 @@ describe Appbundler do
   end
 
   context "when created with the example application" do
+
+
+    binding.pry
     FIXTURES_PATH = File.expand_path("../../fixtures/", __FILE__).freeze
 
     APP_ROOT = File.join(FIXTURES_PATH, "appbundler-example-app").freeze
@@ -272,8 +280,8 @@ describe Appbundler do
                                    gem "chef-config", "= 12.4.1"
                                    gem "mixlib-config", "= 2.2.1"
                                    gem "mixlib-shellout", "= 2.2.0"
-                                   gem "win32-process", "= 0.7.5"
-                                   gem "ffi", "= 1.9.10"
+                                   gem "win32-process", "= 0.10.0"
+                                   gem "ffi", "= 1.17.0"
                                    gem "chef-zero", "= 4.3.0"
                                    gem "ffi-yajl", "= 2.2.2"
                                    gem "libyajl2", "= 1.2.0"
