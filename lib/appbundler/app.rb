@@ -174,7 +174,10 @@ module Appbundler
 
         t.puts "# GEMS FROM GEMFILE:"
 
+        t.puts "# without #{without.inspect}"
         requested_dependencies(without).each do |dep|
+          t.puts "# dep #{dep.inspect} "
+          t.puts "# dep requirement #{dep.requirement.inspect}"
           next if SHITLIST.include?(dep.name)
           if locked_gems[dep.name]
             t.puts locked_gems[dep.name]
