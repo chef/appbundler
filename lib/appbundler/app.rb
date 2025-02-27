@@ -159,7 +159,7 @@ module Appbundler
 
           case s.source
           when Bundler::Source::Path
-            t.puts "# #{spec.name} is a path gem, not adding to Gemfile"
+            t.puts "# #{spec.name} is a path gem, adding to Gemfile but with #{spec.gem_dir} without version #{spec.version}"
             locked_gems[spec.name] = %Q{gem "#{spec.name}", path: "#{spec.gem_dir}"}
           when Bundler::Source::Rubygems
             t.puts "# #{spec.name} is a rubygems gem, adding to Gemfile"
