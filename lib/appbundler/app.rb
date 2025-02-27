@@ -159,11 +159,14 @@ module Appbundler
 
           case s.source
           when Bundler::Source::Path
+            t.puts "# #{spec.name} is a path gem, not adding to Gemfile"
             locked_gems[spec.name] = %Q{gem "#{spec.name}", path: "#{spec.gem_dir}"}
           when Bundler::Source::Rubygems
+            t.puts "# #{spec.name} is a rubygems gem, adding to Gemfile"
             # FIXME: should add the spec.version as a gem requirement below
             locked_gems[spec.name] = %Q{gem "#{spec.name}", "= #{spec.version}"}
           when Bundler::Source::Git
+            t.puts "# #{spec.name} is a git gem, no handler for #{spec.version}"
             raise "FIXME: appbundler needs a patch to support Git gems"
           else
             raise "appbundler doens't know this source type"
