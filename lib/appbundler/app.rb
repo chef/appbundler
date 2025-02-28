@@ -155,6 +155,7 @@ module Appbundler
         gemfile_lock_specs.each do |s|
           # next if SHITLIST.include?(s.name)
           spec = safe_resolve_local_gem(s)
+          t.puts "# => #{s.inspect} returned #{spec.inspect} after safe_resolve_local_gem call"
           next if spec.nil?
 
           case s.source
