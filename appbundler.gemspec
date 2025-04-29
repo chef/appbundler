@@ -1,5 +1,4 @@
-# coding: utf-8
-lib = File.expand_path("../lib", __FILE__)
+lib = File.expand_path("lib", __dir__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require "appbundler/version"
 
@@ -15,11 +14,12 @@ Gem::Specification.new do |spec|
 
   spec.files         = Dir.glob("{bin,lib,spec}/**/*").reject { |f| File.directory?(f) } + %w{ LICENSE appbundler.gemspec Rakefile Gemfile }
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
-  spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
-  spec.required_ruby_version = ">= 2.4"
+  spec.required_ruby_version = ">= 3.1"
 
   spec.add_dependency "mixlib-shellout", ">= 2.0", "< 4.0"
   spec.add_dependency "mixlib-cli", ">= 1.4", "< 3.0"
+  spec.add_dependency "yard"
+  spec.add_dependency "fiddle"
 end
