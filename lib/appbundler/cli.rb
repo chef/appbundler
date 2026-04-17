@@ -1,6 +1,6 @@
 require_relative "version"
 require_relative "app"
-require "mixlib/cli"
+require "mixlib/cli" unless defined?(Mixlib::CLI)
 
 module Appbundler
   class CLI
@@ -90,7 +90,7 @@ module Appbundler
     end
 
     def verify_bin_path
-      if !File.directory?(bin_path)
+      unless File.directory?(bin_path)
         err("BINSTUB_DIR `#{bin_path}' is not a directory or doesn't exist")
         usage_and_exit!
       end

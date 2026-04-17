@@ -1,8 +1,8 @@
 require "bundler"
-require "fileutils"
-require "mixlib/shellout"
-require "tempfile"
-require "pp"
+require "fileutils" unless defined?(FileUtils)
+require "mixlib/shellout" unless defined?(Mixlib::ShellOut)
+require "tempfile" unless defined?(Tempfile)
+require "pp" unless defined?(PP)
 
 module Appbundler
 
@@ -127,6 +127,7 @@ module Appbundler
       gem_path = installed_spec.gem_dir
       # If we're already using that directory, don't copy (it won't work anyway)
       return if gem_path == File.dirname(gemfile_lock)
+
       FileUtils.install(gemfile_lock, gem_path, mode: 0644)
       if File.exist?(dot_bundle_dir) && File.directory?(dot_bundle_dir)
         FileUtils.cp_r(dot_bundle_dir, gem_path)
@@ -176,6 +177,7 @@ module Appbundler
 
         requested_dependencies(without).each do |dep|
           next if SHITLIST.include?(dep.name)
+
           if locked_gems[dep.name]
             t.puts locked_gems[dep.name]
           else
@@ -191,6 +193,7 @@ module Appbundler
         locked_gems.each do |name, line|
           next if SHITLIST.include?(name)
           next if seen_gems[name]
+
           t.puts line
         end
 
@@ -244,7 +247,7 @@ module Appbundler
     end
 
     def batchfile_stub
-      ruby_relpath_windows = ruby_relative_path.tr("/", '\\')
+      ruby_relpath_windows = ruby_relative_path.tr("/", "\\")
       <<~E
         @ECHO OFF
         "%~dp0\\#{ruby_relpath_windows}" "%~dpn0" %*
@@ -452,7 +455,7 @@ module Appbundler
     private
 
     def git_sourced_gems
-      runtime_dep_specs.select { |i| i.source.kind_of?(Bundler::Source::Git) }
+      runtime_dep_specs.select { |i| i.source.is_a?(Bundler::Source::Git) }
     end
 
     def inaccessable_git_sourced_gems
@@ -473,6 +476,7 @@ module Appbundler
         next if collected_deps.any? { |s| s.name == dep.name }
         # a bundler dep will not get pinned in Gemfile.lock
         next if dep.name == "bundler"
+
         next_spec = spec_for(dep.name)
         collected_deps << next_spec
         add_dependencies_from(next_spec, collected_deps)

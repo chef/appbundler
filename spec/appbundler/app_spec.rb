@@ -26,7 +26,7 @@ describe Appbundler do
   end
 
   def target_bindir
-    File.expand_path("../../test-tmp/bin", __FILE__)
+    File.expand_path("../test-tmp/bin", __dir__)
   end
 
   context "given an app with multiple levels of dependencies" do
@@ -44,15 +44,15 @@ describe Appbundler do
     end
 
     let!(:first_level_dep_a) do
-      double_spec(:first_level_dep_a, "1.1.0", [:second_level_dep_a_a, :second_level_dep_shared])
+      double_spec(:first_level_dep_a, "1.1.0", %i{second_level_dep_a_a second_level_dep_shared})
     end
 
     let!(:first_level_dep_b) do
-      double_spec(:first_level_dep_b, "1.2.0", [:second_level_dep_b_a, :second_level_dep_shared])
+      double_spec(:first_level_dep_b, "1.2.0", %i{second_level_dep_b_a second_level_dep_shared})
     end
 
     let!(:app_spec) do
-      double_spec(:app, "1.0.0", [:first_level_dep_a, :first_level_dep_b])
+      double_spec(:app, "1.0.0", %i{first_level_dep_a first_level_dep_b})
     end
 
     let(:bin_path) { File.join(target_bindir, "foo") }
@@ -213,7 +213,7 @@ describe Appbundler do
   end
 
   context "when created with the example application" do
-    FIXTURES_PATH = File.expand_path("../../fixtures/", __FILE__).freeze
+    FIXTURES_PATH = File.expand_path("../fixtures", __dir__).freeze
 
     APP_ROOT = File.join(FIXTURES_PATH, "appbundler-example-app").freeze
 
@@ -470,7 +470,7 @@ describe Appbundler do
     context "on windows" do
 
       let(:expected_ruby_relpath) do
-        app.ruby_relative_path.tr("/", '\\')
+        app.ruby_relative_path.tr("/", "\\")
       end
 
       let(:expected_batch_code) do
